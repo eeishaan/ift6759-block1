@@ -102,3 +102,25 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Editor temporaries
+*.swn
+*.swo
+*.swp
+*.swm
+*~
+
+# macOS dir files
+.DS_Store
+
+# Sublime Text settings
+*.sublime-workspace
+*.sublime-project
+
+# Eclipse Project settings
+*.*project
+.settings
+
+# Visual Studio Code files
+.vscode
+.vs
