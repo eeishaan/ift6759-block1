@@ -4,7 +4,6 @@ Module containing dimension reduction techniques
 '''
 
 import torch
-
 from sklearn.manifold import TSNE
 
 
