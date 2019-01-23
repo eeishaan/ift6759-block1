@@ -53,7 +53,7 @@ def dim_reduction_task(train_vectors, train_labels, out_dir):
             arg_dict = {}
             if user_id not in color_dict:
                 arg_dict['label'] = user_id
-                color_dict[user_id] = tuple(np.random.rand(3))
+                color_dict[user_id] = np.random.rand(1,3)
             arg_dict['c'] = color_dict[user_id]
             ax.scatter(x[0], x[1], **arg_dict)
         
