@@ -124,3 +124,15 @@ venv.bak/
 # Visual Studio Code files
 .vscode
 .vs
+
+# Sphinx files
+_build
+_static
+_templates
+Makefile
+*.bat
+*.rst
+conf.py
+
+# results directory
+omsignal/results
