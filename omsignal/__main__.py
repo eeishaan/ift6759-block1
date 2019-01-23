@@ -45,14 +45,17 @@ def dim_reduction_task(train_vectors, train_labels, out_dir):
         X = transformer(X)
         color_dict = {}
         fig = plt.figure()
-        ax = fig.add_subplot(1, 1, 1, axisbg="1.0")
+        ax = fig.add_subplot(1, 1, 1)
 
         for x, label in zip(X, labels):
             user_id = label[-1]
+            # use this to prevent multiple legend entries
+            arg_dict = {}
             if user_id not in color_dict:
-                color_dict[user_id] = np.random.rand(3,1)
-            color = color_dict[user_id]
-            ax.scatter(*x, c=color, label=user_id)
+                arg_dict['label'] = user_id
+                color_dict[user_id] = tuple(np.random.rand(3))
+            arg_dict['c'] = color_dict[user_id]
+            ax.scatter(x[0], x[1], **arg_dict)
         
         plt.title("Scatter plot for {}".format(transformer.name))
         plt.legend(loc=2)
