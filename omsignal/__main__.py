@@ -9,6 +9,7 @@ import yaml
 
 from omsignal.constants import (RESULT_DIR, TRAIN_LABELED_FILE,
                                 VALIDATION_LABELED_FILE)
+from omsignal.utils.dim_reduction import SVDTransform, TSNETransform
 from omsignal.utils.loader import get_vector_and_labels
 
 
@@ -33,6 +34,40 @@ def task1(train_vectors, train_labels, output_folder):
         plt.savefig(output_folder / 'vis{}.png'.format(i+1))
 
 
+def dim_reduction_task(train_vectors, train_labels, out_dir):
+    '''
+    Reduce dimension and plot scatter plots
+    '''
+    out_dim = 2
+    
+
+    def _reduce_and_plot(X, labels, transformer):
+        X = transformer(X)
+        color_dict = {}
+        fig = plt.figure()
+        ax = fig.add_subplot(1, 1, 1, axisbg="1.0")
+
+        for x, label in zip(X, labels):
+            user_id = label[-1]
+            if user_id not in color_dict:
+                color_dict[user_id] = np.random.rand(3,1)
+            color = color_dict[user_id]
+            ax.scatter(*x, c=color, label=user_id)
+        
+        plt.title("Scatter plot for {}".format(transformer.name))
+        plt.legend(loc=2)
+        plt.savefig(out_dir / "{}.png".format(transformer.name))
+        
+        
+    # initialize reduction transformer
+    svd_transform = SVDTransform(out_dim)
+    tsne_transform = TSNETransform(out_dim)
+
+    _reduce_and_plot(train_vectors, train_labels, svd_transform)
+    _reduce_and_plot(train_vectors, train_labels, tsne_transform)
+    
+
+
 def main():
     '''
     Main function
@@ -49,7 +84,12 @@ def main():
     valid_vectors, valid_labels = get_vector_and_labels(VALIDATION_LABELED_FILE)
 
     task1_output_folder = RESULT_DIR / 'task1' 
+    os.makedirs(task1_output_folder, exist_ok=True)
     task1(train_vectors, train_labels, task1_output_folder)
+
+    scatter_plot_dir = RESULT_DIR / 'dim_reduction'
+    os.makedirs(scatter_plot_dir, exist_ok=True)
+    dim_reduction_task(train_vectors, train_labels, scatter_plot_dir)
 
 
 if __name__ == '__main__':
