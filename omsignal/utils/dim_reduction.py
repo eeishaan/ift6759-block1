@@ -3,7 +3,7 @@
 Module containing dimension reduction techniques
 '''
 
-import torch
+import numpy as np
 from sklearn.manifold import TSNE
 
 
@@ -17,7 +17,7 @@ class SVDTransform(object):
         self.name = 'SVD Transformer'
 
     def __call__(self, X):
-        U, _, _ = torch.svd(X.t())
+        U, _, _ = np.linalg.svd(X)
         return U[:, :self.out_dim]
     
 
