@@ -28,4 +28,3 @@ class ToNumpy(object):
 
     def __call__(self, X):
         return X.numpy()
-    
