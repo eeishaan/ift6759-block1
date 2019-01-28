@@ -66,7 +66,10 @@ def dim_reduction_task(train_vectors, train_labels, out_dir):
     svd_transform = SVDTransform(out_dim)
     tsne_transform = TSNETransform(out_dim)
 
+    # transform using SVD
     _reduce_and_plot(train_vectors, train_labels, svd_transform)
+
+    # transform using t-SNE 
     _reduce_and_plot(train_vectors, train_labels, tsne_transform)
     
 
