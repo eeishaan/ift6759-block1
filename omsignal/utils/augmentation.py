@@ -26,4 +26,15 @@ class SignalShift(object):
 
         new_data = np.vstack([_augment_and_duplicate_labels(X) for _ in range(num_shits)])
         return new_data
-        
+
+
+class Invert(object):
+    '''
+    Invert the signal
+    '''
+
+    def __init__(self):
+        pass
+
+    def __call__(self, X):
+        return X * -1
