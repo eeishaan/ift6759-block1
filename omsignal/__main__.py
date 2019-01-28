@@ -6,11 +6,14 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import yaml
+from torchvision.transforms import Compose
 
 from omsignal.constants import (RESULT_DIR, TRAIN_LABELED_FILE,
                                 VALIDATION_LABELED_FILE)
 from omsignal.utils.dim_reduction import SVDTransform, TSNETransform
 from omsignal.utils.loader import get_vector_and_labels
+from omsignal.utils.preprocessor import Preprocessor
+from omsignal.utils.transform import ToNumpy, ToTensor
 
 
 def task1(train_vectors, train_labels, output_folder):
@@ -18,6 +21,20 @@ def task1(train_vectors, train_labels, output_folder):
     Pick three ids at random and plot their line graph
     '''
     size=3
+
+    def _plot():
+        nonlocal size
+        nonlocal subset
+        nonlocal label_subset
+        nonlocal preprocess
+        for i in range(size):
+            plt.figure(i+1)
+            plt.title("User ID: {} {} preprocessing"
+                .format(int(label_subset[i][-1]),
+                        "with" if preprocess else "without"))
+            plt.plot(subset[i])
+            plt.savefig(output_folder / 'vis{}_{}.png'
+                .format(i+1, "p" if preprocess else "wp"))
 
     all_indices = np.arange(32)
     np.random.shuffle(all_indices)
@@ -27,11 +44,14 @@ def task1(train_vectors, train_labels, output_folder):
     subset = np.take(train_vectors, random_indices, axis=0)
     label_subset = np.take(train_labels, random_indices, axis=0)
     
-    for i in range(size):
-        plt.figure(i+1)
-        plt.title("User ID: {}".format(int(label_subset[i][-1])))
-        plt.plot(subset[i])
-        plt.savefig(output_folder / 'vis{}.png'.format(i+1))
+    preprocess = False
+    _plot()
+    preprocess = True
+    preprocess_transform = Preprocessor().forward
+    full_transform = Compose(
+        [ToTensor(), preprocess_transform, ToNumpy()])
+    subset = full_transform(subset)
+    _plot()
 
 
 def dim_reduction_task(train_vectors, train_labels, out_dir):
