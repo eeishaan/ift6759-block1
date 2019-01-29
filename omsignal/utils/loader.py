@@ -24,20 +24,22 @@ def get_vector_and_labels(file_path: str) -> tuple:
     return dataset[:, :-4], dataset[:, -4:]
 
 class OmsignalDataset(Dataset):
-    def __init__(self, file_path, shape=(160, 3754), dtype='float32', transform=None):
+    def __init__(self, file_path,
+            shape=(160, 3754), dtype='float32', transform=None, augment_transform=None):
         self.data = read_memfile(file_path, shape=shape, dtype=dtype)
         self.transform = transform
+        if augment_transform:
+            self.data = augment_transform(self.data)
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        sample = self.data[idx]
+        sample = self.data[idx, :]
         if self.transform:
             sample = self.transform(sample)
         return sample
 
-
-def get_dataloader(dataset, transform, shuffle=True, batch_size=4, num_workers=4):
+def get_dataloader(dataset, shuffle=True, batch_size=20, num_workers=4):
     return DataLoader(dataset, batch_size=batch_size,
         shuffle=shuffle, num_workers=num_workers)
