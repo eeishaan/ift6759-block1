@@ -28,11 +28,9 @@ class Preprocessor(nn.Module):
         self.mvKernelSize = (mv_window_size * num_samples_per_second) + 1
 
     def forward(self, x):
-
         with torch.no_grad():
+            original_shape = x.shape
             x = x.unsqueeze(0)
-            
-
             # Remove window mean and standard deviation
 
             x = (x - torch.mean(x, dim=2, keepdim=True)) / \
@@ -60,4 +58,4 @@ class Preprocessor(nn.Module):
 
         x = x.detach().contiguous()
 
-        return x.squeeze(0)
+        return x.view(original_shape)
