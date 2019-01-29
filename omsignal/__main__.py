@@ -18,7 +18,7 @@ from omsignal.utils.dim_reduction import SVDTransform, TSNETransform
 from omsignal.utils.loader import (OmsignalDataset, get_dataloader,
                                    get_vector_and_labels)
 from omsignal.utils.preprocessor import Preprocessor
-from omsignal.utils.transform import ToNumpy, ToTensor
+from omsignal.utils.transform import RemapLabels, ToNumpy, ToTensor
 
 
 def task1(train_vectors, train_labels, output_folder):
@@ -101,15 +101,18 @@ def dim_reduction_task(train_vectors, train_labels, out_dir):
 def train_simple_model():
     device = torch.device("cpu")
     # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    train_dataset = OmsignalDataset(TRAIN_LABELED_FILE)
-    validation_dataset = OmsignalDataset(VALIDATION_LABELED_FILE)
     transform = Compose([
-        SignalShift(),
+        RemapLabels(),
         ToTensor()
     ])
-    train_dataloader = get_dataloader(train_dataset, transform)
-    validation_dataset = OmsignalDataset(VALIDATION_LABELED_FILE)
-    validation_dataloader = get_dataloader(validation_dataset, ToTensor())
+    train_dataset = OmsignalDataset(
+        TRAIN_LABELED_FILE,
+        augment_transform=SignalShift(shift_len=3750),
+        transform=transform)
+    train_dataloader = get_dataloader(train_dataset, num_workers=4)
+    validation_dataset = OmsignalDataset(
+        VALIDATION_LABELED_FILE, transform=ToTensor())
+    validation_dataloader = get_dataloader(validation_dataset)
     D_in, h_1, h_2, D_out = 3750, 1024, 512, 32
     model = nn.Sequential(
         Preprocessor(),
@@ -143,7 +146,7 @@ def train_simple_model():
             raw_data, labels = sample[:, :-4].to(device), sample[:, -4:].to(device).long()
             outputs = model(raw_data)
             _, predicted = torch.max(outputs.data, 1)
-            correct += recall_score(labels[:, -1], predicted, average='macro')
+            correct += recall_score(labels[:, -1].cpu().numpy(), predicted.cpu().numpy(), average='macro')
         
         print('Epoch : %d Validation Score: %.3f' % (e, correct))
         exit()
@@ -163,9 +166,13 @@ def main():
     train_simple_model()
     # separate out the labels and raw data
     # train_vectors, train_labels = get_vector_and_labels(TRAIN_LABELED_FILE)
+
     # valid_vectors, valid_labels = get_vector_and_labels(VALIDATION_LABELED_FILE)
 
     # sample = np.hstack((train_vectors, train_labels))
+    # print(train_labels[:, -1])
+    # x = RemapLabels()(sample)
+    # print(x[: ,-1])
     # tr = SignalShift()
     # print(tr(sample).shape)
     # task1_output_folder = RESULT_DIR / 'task1' 
