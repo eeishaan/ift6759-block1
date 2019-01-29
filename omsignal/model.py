@@ -17,8 +17,8 @@ class LSTMModel(nn.Module):
         self.linear = nn.Linear(self.hidden_dim, self.out_dim)
     
     def init_hidden(self):
-        self.hidden = (torch.zeros(1, 1, self.hidden_dim).to(device),
-                       torch.zeros(1, 1, self.hidden_dim).to(device))
+        self.hidden = (torch.zeros(1, 1, self.hidden_dim).to(self.device),
+                       torch.zeros(1, 1, self.hidden_dim).to(self.device))
     
     def forward(self, X):
         X = self.preprocessor(X)
