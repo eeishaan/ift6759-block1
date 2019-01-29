@@ -133,8 +133,6 @@ def train_simple_model():
         running_loss = 0
         for _, sample in enumerate(train_dataloader):
             raw_data, labels = sample[:, :-4].to(device), sample[:, -4:].to(device).long()
-            print(raw_data.shape)
-            continue
             # zero the parameter gradients
             optimizer.zero_grad()
             
@@ -143,18 +141,18 @@ def train_simple_model():
             running_loss += loss.item()
             loss.backward()
             optimizer.step()
-        # model.eval()
-        # correct = 0
-        # for i, sample in enumerate(validation_dataloader):
-        #     raw_data, labels = sample[:, :-4].to(device), sample[:, -4:].to(device).long()
-        #     outputs = model(raw_data)
-        #     _, predicted = torch.max(outputs.data, 1)
-        #     print(set(labels[:, -1].cpu().numpy()) - set(predicted.cpu().numpy()))
-        #     correct += recall_score(labels[:, -1].cpu().numpy(), predicted.cpu().numpy(), average='macro')
+        model.eval()
+        correct = 0
+        for i, sample in enumerate(validation_dataloader):
+            raw_data, labels = sample[:, :-4].to(device), sample[:, -4:].to(device).long()
+            outputs = model(raw_data)
+            _, predicted = torch.max(outputs.data, 1)
+            # print(set(labels[:, -1].cpu().numpy()) - set(predicted.cpu().numpy()))
+            correct += recall_score(labels[:, -1].cpu().numpy(), predicted.cpu().numpy(), average='macro')
 
-        # if e % 10 == 9:
-        #     print('Epoch : %d Loss : %.3f ' % (e, running_loss/len(train_dataloader)))
-        #     print('Epoch : %d Validation Score: %.3f' % (e, correct))
+        if e % 10 == 9:
+            print('Epoch : %d Loss : %.3f ' % (e, running_loss/len(train_dataloader)))
+            print('Epoch : %d Validation Score: %.3f' % (e, correct))
 
 
 
@@ -172,7 +170,7 @@ def train_lstm():
         TRAIN_LABELED_FILE,
         augment_transform=SignalShift(shift_len=3750),
         transform=transform)
-    train_dataloader = get_dataloader(train_dataset, num_workers=0)
+    train_dataloader = get_dataloader(train_dataset, num_workers=0, shuffle=False)
     
     # initialize validation dataloader
     validation_dataset = OmsignalDataset(
@@ -193,7 +191,6 @@ def train_lstm():
         running_loss = 0
         for _, sample in enumerate(train_dataloader):
             raw_data, labels = sample[:, :-4].to(device), sample[:, -4:].to(device).long()
-
             # erase LSTM history
             model.init_hidden()
 
@@ -205,14 +202,12 @@ def train_lstm():
             running_loss += loss.item()
             loss.backward()
             optimizer.step()
-
         model.eval()
         correct = 0
         for _, sample in enumerate(validation_dataloader):
             raw_data, labels = sample[:, :-4].to(device), sample[:, -4:].to(device).long()
             outputs = model(raw_data)
             _, predicted = torch.max(outputs.data, 1)
-            print(set(labels[:, -1].cpu().numpy()) - set(predicted.cpu().numpy()))
             correct += recall_score(labels[:, -1].cpu().numpy(), predicted.cpu().numpy(), average='macro')
 
         if e % 10 == 9:
@@ -231,8 +226,8 @@ def main():
     plt.ioff()
 
     torch.manual_seed(1)
-    train_lstm()
-    # train_simple_model()
+    # train_lstm()
+    train_simple_model()
     # separate out the labels and raw data
     # train_vectors, train_labels = get_vector_and_labels(TRAIN_LABELED_FILE)
 
@@ -255,3 +250,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
