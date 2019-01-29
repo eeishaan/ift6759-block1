@@ -31,6 +31,21 @@ class ToNumpy(object):
     def __call__(self, X):
         return X.numpy()
 
+class RemapLabels(object):
+    def __init__(self):
+        self.map = None
+    
+    def __call__(self, X):
+        self.map = {}
+        idx = -1
+        new_array = np.zeros(shape=(*X.shape[:-1], 1))
+        for i, label in enumerate(X[:, -1]):
+            if label not in self.map:
+                idx +=1
+                self.map[label] = idx
+            new_array[i] = idx
+        X[:, -1] = new_array[:, 0]
+        return X
 
 class FFT(object):
     '''
