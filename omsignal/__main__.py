@@ -182,7 +182,7 @@ def train_lstm():
     D_in, h_1, D_out = 3750, 512, 32
 
     # initialize LSTM model
-    model = LSTMModel(D_in, D_out, h_1).to(device)
+    model = LSTMModel(D_in, D_out, h_1, device).to(device)
 
     criterion = nn.NLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=0.7)
