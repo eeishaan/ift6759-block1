@@ -37,7 +37,8 @@ class RemapLabels(object):
         self.idx = -1
 
     def __call__(self, X):
-        label = X[-1]        
+        X = np.copy(X)
+        label = str(int(X[-1]))
         if label not in self.map:
             self.idx +=1
             self.map[label] = self.idx
