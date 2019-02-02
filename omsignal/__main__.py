@@ -218,8 +218,7 @@ def train_lstm():
 
 
 def train_cnn():
-    device = torch.device("cuda:0" if  not torch.cuda.is_available() else "cpu")
-    device = torch.device("cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     remap_transform = RemapLabels()
     segment_size = 110
@@ -236,22 +235,21 @@ def train_cnn():
         TRAIN_LABELED_FILE,
         transform=transform)
     clipper = ClipAndFlatten(segment_size)
-    train_dataloader = get_dataloader(train_dataset, num_workers=0, shuffle=True)
+    train_dataloader = get_dataloader(train_dataset, num_workers=4, shuffle=True)
         
     # initialize validation dataloader
     validation_dataset = OmsignalDataset(
         VALIDATION_LABELED_FILE,
         transform=transform)
-    validation_dataloader = get_dataloader(validation_dataset, num_workers=0, shuffle=True)
+    validation_dataloader = get_dataloader(validation_dataset, num_workers=4, shuffle=True)
     
     n_filters, kernel_size, linear_dim = 32, 5, 51
 
     # initialize LSTM model
-    model = CNNClassifier(n_filters, kernel_size, linear_dim)\
-            .to(device)
+    model = CNNClassifier(n_filters, kernel_size, linear_dim).to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters())
+    optimizer = torch.optim.Adam(model.parameters(), weight_decay=0.5)
 
     epochs = 100
     for e in range(epochs):
@@ -260,12 +258,12 @@ def train_cnn():
         for _, sample in enumerate(train_dataloader):
             data, labels = sample
             data, labels = clipper(data, labels)
-            data.to(device)
-            labels.to(device)
+            data = data.to(device)
+            labels = labels.long().to(device)
 
             # zero the parameter gradients
             optimizer.zero_grad()
-            l = labels[:, -1].long()
+            l = labels[:, -1]
             outputs = model(data)
             loss = criterion(outputs, l)
             running_loss += loss.item()
@@ -277,9 +275,9 @@ def train_cnn():
         for _, sample in enumerate(validation_dataloader):
             data, labels = sample
             data, labels = clipper(data, labels)
-            data.to(device)
-            labels.to(device)
-            l = labels[:, -1].long()
+            data = data.to(device)
+            labels = labels.long().to(device)
+            l = labels[:, -1]
             outputs = model(data)
             _, predicted = torch.max(outputs.data, 1)
             correct += recall_score(l.cpu().numpy(), predicted.cpu().numpy(), average='macro')
