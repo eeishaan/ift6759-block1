@@ -107,9 +107,8 @@ class Spectogram(object):
 
 class SignalSegmenter(object):
 
-    def __init__(self, segment_size=110, all_window=True):
+    def __init__(self, segment_size=110):
         self.segment_size = segment_size
-        self.all_window = all_window
 
     @classmethod
     def detect_R_peak(cls, data, sada_wd_size=7, fs_wd_size=12, threshold=35):
@@ -195,11 +194,20 @@ class SignalSegmenter(object):
             
             for i in R_peak[recording][1:-1]:
                 new_heart_beat = data[recording][int(i)-int(half_size_int*0.8): int(i)+int(half_size_int*1.2)]
+                if len(new_heart_beat) == 0:
+                    continue
                 all_templates[template_found, :] = new_heart_beat
-                template_found +=1 
-        all_labels = torch.cat((
-            label.repeat(template_found, 1),
-            label.new_full((max_len-template_found, label.shape[-1]), -1)))
+                template_found +=1
+                if template_found == max_len:
+                    break
+            if template_found == max_len:
+                break
+        
+        all_labels = label.repeat(template_found, 1)        
+        if template_found != max_len:
+            all_labels = torch.cat((
+                all_labels,
+                label.new_full((max_len-template_found, label.shape[-1]), -1)))
         return all_templates, all_labels
 
 
@@ -209,3 +217,20 @@ class LabelSeparator(object):
     
     def __call__(self, x):
         return x[:-1*self.label_len], x[-1*self.label_len:]
+
+
+class ClipAndFlatten(object):
+    def __init__(self, segment_size, label_size=4):
+        self.segment_size = segment_size
+        self.label_size = label_size
+
+    def __call__(self, x, y):
+        assert len(x) == len(y)
+        res_x, res_y = \
+            x.new_empty((1, self.segment_size)), y.new_empty((1, self.label_size))
+        for batch in range(len(y)):
+            relevant_rows = int((y[batch, :, 3].ge(0) == 0).nonzero()[0])
+            res_x = torch.cat((res_x, x[batch, :relevant_rows, :]))
+            res_y = torch.cat((res_y, y[batch, :relevant_rows, :]))
+            
+        return res_x, res_y
