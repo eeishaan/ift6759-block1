@@ -196,6 +196,9 @@ class SignalSegmenter(object):
                 new_heart_beat = data[recording][int(i)-int(half_size_int*0.8): int(i)+int(half_size_int*1.2)]
                 if len(new_heart_beat) == 0:
                     continue
+                if len(new_heart_beat) != self.segment_size:
+                    # TODO: pad the seq
+                    continue
                 all_templates[template_found, :] = new_heart_beat
                 template_found +=1
                 if template_found == max_len:
