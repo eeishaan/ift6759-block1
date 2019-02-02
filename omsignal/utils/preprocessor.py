@@ -27,24 +27,22 @@ class Preprocessor(nn.Module):
 
         self.mvKernelSize = (mv_window_size * num_samples_per_second) + 1
 
-    def forward(self, x):
+    def forward(self, *args):
         with torch.no_grad():
-            original_shape = x.shape
-            x = x.unsqueeze(0)
-            # Remove window mean and standard deviation
+            x, label = args[0]
+            x = x.view(1, 1, -1)
 
+            # Remove window mean and standard deviation
             x = (x - torch.mean(x, dim=2, keepdim=True)) / \
                 (torch.std(x, dim=2, keepdim=True) + 0.00001)
 
             # Moving average baseline wander removal
-
             x = x - F.avg_pool1d(
                 x, kernel_size=self.maKernelSize,
                 stride=1, padding=(self.maKernelSize - 1) // 2
             )
 
             # Moving RMS normalization
-
             x = x / (
                 torch.sqrt(
                     F.avg_pool1d(
@@ -57,5 +55,5 @@ class Preprocessor(nn.Module):
         # Don't backpropagate further
 
         x = x.detach().contiguous()
-
-        return x.view(original_shape)
+        x = x.view(-1)
+        return x, label
