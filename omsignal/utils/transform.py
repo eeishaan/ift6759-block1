@@ -206,3 +206,11 @@ class SignalSegmenter(object):
             listoftemplate = np.append(listoftemplate, template, axis = 0)
         
         return listoftemplate[1:]
+
+
+class LabelSeparator(object):
+    def __init__(self, label_len=4):
+        self.label_len = label_len
+    
+    def __call__(self, x):
+        return x[:-1*self.label_len], x[-1*self.label_len:]
