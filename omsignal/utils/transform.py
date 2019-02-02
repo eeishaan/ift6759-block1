@@ -5,6 +5,7 @@ Module containing data transformation
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from scipy import signal
 
 
@@ -111,7 +112,7 @@ class SignalSegmenter(object):
         self.all_window = all_window
 
     @classmethod
-    def detect_R_peak(data, SADA_wd_size = 7, FS_wd_size = 12, Threshold = 35):
+    def detect_R_peak(cls, data, SADA_wd_size = 7, FS_wd_size = 12, Threshold = 35):
         """
         Take a Batch of ECG data and find the location of the R Peak
         
