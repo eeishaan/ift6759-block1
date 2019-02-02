@@ -157,7 +157,7 @@ def train_simple_model():
 
 
 def train_lstm():
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if  not torch.cuda.is_available() else "cpu")
     
     remap_transform = RemapLabels()
     transform = Compose([
@@ -170,14 +170,14 @@ def train_lstm():
         TRAIN_LABELED_FILE,
         augment_transform=SignalShift(shift_len=3750),
         transform=transform)
-    train_dataloader = get_dataloader(train_dataset, num_workers=0, shuffle=False)
+    train_dataloader = get_dataloader(train_dataset, num_workers=0, shuffle=True)
     
     # initialize validation dataloader
     validation_dataset = OmsignalDataset(
         VALIDATION_LABELED_FILE, transform=transform)
     validation_dataloader = get_dataloader(validation_dataset)
     
-    D_in, h_1, D_out = 3750, 512, 32
+    D_in, h_1, D_out = 1, 512, 32
 
     # initialize LSTM model
     model = LSTMModel(D_in, D_out, h_1, device).to(device)
@@ -226,8 +226,8 @@ def main():
     plt.ioff()
 
     torch.manual_seed(1)
-    # train_lstm()
-    train_simple_model()
+    train_lstm()
+    # train_simple_model()
     # separate out the labels and raw data
     # train_vectors, train_labels = get_vector_and_labels(TRAIN_LABELED_FILE)
 
