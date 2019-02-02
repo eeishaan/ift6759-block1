@@ -57,10 +57,20 @@ class CNNClassifier(nn.Module):
             nn.MaxPool1d(2),
         )
         self.linear = nn.Sequential(
-            nn.Linear(self.linear_dim*self.n_filters, 128),
+            nn.Linear(self.linear_dim*self.n_filters, 512),
             nn.ReLU(),
-            nn.Linear(128,32),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256,32),
         )
+        self.cnn.apply(CNNClassifier.init_weights)
+        self.linear.apply(CNNClassifier.init_weights)
+
+    @classmethod
+    def init_weights(cls, m):
+        if isinstance(m ,(nn.Linear, nn.Conv1d)):
+            torch.nn.init.xavier_uniform_(m.weight)
+            m.bias.data.fill_(0.01)
 
     def forward(self, x):
         x = x.unsqueeze(1)
