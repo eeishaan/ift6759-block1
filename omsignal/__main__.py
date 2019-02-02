@@ -290,8 +290,6 @@ def train_cnn():
             outputs = model(data)
             _, preds = torch.max(outputs.data, 1)
             predicted.extend(preds.cpu().numpy())
-        print(true_labels)
-        print(predicted)
         r_score = recall_score(true_labels, predicted, average='macro')
         acc = accuracy_score(true_labels, predicted)
         print('Epoch : %d Validation score : %.3f Accuracy : %.3f' % (e, r_score, acc))
