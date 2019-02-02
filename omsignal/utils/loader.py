@@ -25,7 +25,7 @@ def get_vector_and_labels(file_path: str) -> tuple:
 
 class OmsignalDataset(Dataset):
     def __init__(self, file_path,
-            shape=(160, 3754), dtype='float64', transform=None, augment_transform=None):
+            shape=(160, 3754), dtype='float32', transform=None, augment_transform=None):
         self.data = read_memfile(file_path, shape=shape, dtype=dtype)
         self.transform = transform
         if augment_transform:

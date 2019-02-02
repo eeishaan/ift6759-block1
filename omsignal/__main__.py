@@ -248,8 +248,7 @@ def train_cnn():
 
     # initialize LSTM model
     model = CNNClassifier(n_filters, kernel_size, linear_dim)\
-            .to(device)\
-                .double()
+            .to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters())
