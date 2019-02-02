@@ -8,11 +8,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 import yaml
-from sklearn.metrics import recall_score
+from sklearn.metrics import accuracy_score, recall_score
 from torchvision.transforms import Compose
 
-from omsignal.constants import (RESULT_DIR, TRAIN_LABELED_FILE,
-                                VALIDATION_LABELED_FILE)
+from omsignal.constants import (MODEL_DIR, MODEL_PATH, RESULT_DIR,
+                                TRAIN_LABELED_FILE, VALIDATION_LABELED_FILE)
 from omsignal.model import CNNClassifier, LSTMModel
 from omsignal.utils.augmentation import SignalShift
 from omsignal.utils.dim_reduction import SVDTransform, TSNETransform
@@ -235,13 +235,13 @@ def train_cnn():
         TRAIN_LABELED_FILE,
         transform=transform)
     clipper = ClipAndFlatten(segment_size)
-    train_dataloader = get_dataloader(train_dataset, num_workers=4, shuffle=True)
+    train_dataloader = get_dataloader(train_dataset, batch_size=10, num_workers=4, shuffle=True)
         
     # initialize validation dataloader
     validation_dataset = OmsignalDataset(
         VALIDATION_LABELED_FILE,
         transform=transform)
-    validation_dataloader = get_dataloader(validation_dataset, num_workers=4, shuffle=True)
+    validation_dataloader = get_dataloader(validation_dataset, batch_size=10, num_workers=4, shuffle=True)
     
     n_filters, kernel_size, linear_dim = 32, 5, 51
 
@@ -269,22 +269,37 @@ def train_cnn():
             running_loss += loss.item()
             loss.backward()
             optimizer.step()
+        torch.save({
+            'epoch': e,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss,
+            'label_mapping': remap_transform.map
+        }, os.path.join(MODEL_DIR, "latest_train.pt"))
         model.eval()
         print('Epoch : %d Loss : %.3f ' % (e, running_loss))
-        correct = 0
+        true_labels = []
+        predicted = []
         for _, sample in enumerate(validation_dataloader):
             data, labels = sample
             data, labels = clipper(data, labels)
             data = data.to(device)
             labels = labels.long().to(device)
             l = labels[:, -1]
+            true_labels.extend(l.cpu().numpy())
             outputs = model(data)
-            _, predicted = torch.max(outputs.data, 1)
-            correct += recall_score(l.cpu().numpy(), predicted.cpu().numpy(), average='macro')
-
-        print('Epoch : %d Validation score : %.3f' % (e, correct))
+            _, preds = torch.max(outputs.data, 1)
+            predicted.extend(preds.cpu().numpy())
+        print(true_labels)
+        print(predicted)
+        r_score = recall_score(true_labels, predicted, average='macro')
+        acc = accuracy_score(true_labels, predicted)
+        print('Epoch : %d Validation score : %.3f Accuracy : %.3f' % (e, r_score, acc))
         print('--------------------------------------------------------------')
-
+    torch.save({
+        'label_mapping': remap_transform.map,
+        'model_state': model.state_dict()
+    }, "{}".format(MODEL_PATH))
 
 def main():
     '''
