@@ -187,7 +187,7 @@ class SignalSegmenter(object):
 
         template_found = 0
         max_len = 200
-        all_templates = data.new_empty(max_len, self.segment_size)
+        all_templates = data.new_empty((max_len, self.segment_size))
         for recording in range(len(R_peak)):
             #generate the template
             half_size_int = int(self.segment_size//2)
@@ -236,4 +236,4 @@ class ClipAndFlatten(object):
             res_x = torch.cat((res_x, x[batch, :relevant_rows, :]))
             res_y = torch.cat((res_y, y[batch, :relevant_rows, :]))
             
-        return res_x, res_y
+        return res_x[1:, :], res_y[1:, :]
