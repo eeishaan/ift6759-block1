@@ -13,13 +13,15 @@ from torchvision.transforms import Compose
 
 from omsignal.constants import (RESULT_DIR, TRAIN_LABELED_FILE,
                                 VALIDATION_LABELED_FILE)
-from omsignal.model import LSTMModel
+from omsignal.model import CNNClassifier, LSTMModel
 from omsignal.utils.augmentation import SignalShift
 from omsignal.utils.dim_reduction import SVDTransform, TSNETransform
 from omsignal.utils.loader import (OmsignalDataset, get_dataloader,
                                    get_vector_and_labels)
 from omsignal.utils.preprocessor import Preprocessor
-from omsignal.utils.transform import RemapLabels, ToNumpy, ToTensor
+from omsignal.utils.transform import (ClipAndFlatten, LabelSeparator,
+                                      RemapLabels, SignalSegmenter, ToNumpy,
+                                      ToTensor)
 
 
 def task1(train_vectors, train_labels, output_folder):
@@ -214,6 +216,79 @@ def train_lstm():
             print('Epoch : %d Loss : %.3f ' % (e, running_loss/len(train_dataloader)))
             print('Epoch : %d Validation Score: %.3f' % (e, correct))
 
+
+def train_cnn():
+    device = torch.device("cuda:0" if  not torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
+
+    remap_transform = RemapLabels()
+    segment_size = 110
+    transform = Compose([
+        remap_transform,
+        ToTensor(),
+        LabelSeparator(),
+        Preprocessor(),
+        SignalSegmenter(segment_size),
+    ])
+    
+    # initialize train dataloader
+    train_dataset = OmsignalDataset(
+        TRAIN_LABELED_FILE,
+        transform=transform)
+    clipper = ClipAndFlatten(segment_size)
+    train_dataloader = get_dataloader(train_dataset, num_workers=0, shuffle=True)
+        
+    # initialize validation dataloader
+    validation_dataset = OmsignalDataset(
+        VALIDATION_LABELED_FILE,
+        transform=transform)
+    validation_dataloader = get_dataloader(validation_dataset, num_workers=0, shuffle=True)
+    
+    n_filters, kernel_size, linear_dim = 32, 5, 51
+
+    # initialize LSTM model
+    model = CNNClassifier(n_filters, kernel_size, linear_dim)\
+            .to(device)\
+                .double()
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters())
+
+    epochs = 100
+    for e in range(epochs):
+        model.train()
+        running_loss = 0
+        for _, sample in enumerate(train_dataloader):
+            data, labels = sample
+            data, labels = clipper(data, labels)
+            data.to(device)
+            labels.to(device)
+
+            # zero the parameter gradients
+            optimizer.zero_grad()
+            l = labels[:, -1].long()
+            outputs = model(data)
+            loss = criterion(outputs, l)
+            running_loss += loss.item()
+            loss.backward()
+            optimizer.step()
+        model.eval()
+        print('Epoch : %d Loss : %.3f ' % (e, running_loss))
+        correct = 0
+        for _, sample in enumerate(validation_dataloader):
+            data, labels = sample
+            data, labels = clipper(data, labels)
+            data.to(device)
+            labels.to(device)
+            l = labels[:, -1].long()
+            outputs = model(data)
+            _, predicted = torch.max(outputs.data, 1)
+            correct += recall_score(l.cpu().numpy(), predicted.cpu().numpy(), average='macro')
+
+        print('Epoch : %d Validation score : %.3f' % (e, correct))
+        print('--------------------------------------------------------------')
+
+
 def main():
     '''
     Main function
@@ -221,12 +296,13 @@ def main():
 
     # fix seed for reproducability
     np.random.seed(1)
+    torch.manual_seed(1)
 
     # turn off interactive plotting
     plt.ioff()
 
-    torch.manual_seed(1)
-    train_lstm()
+    train_cnn()
+    # train_lstm()
     # train_simple_model()
     # separate out the labels and raw data
     # train_vectors, train_labels = get_vector_and_labels(TRAIN_LABELED_FILE)
@@ -250,4 +326,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
