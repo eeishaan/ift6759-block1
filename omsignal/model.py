@@ -31,3 +31,40 @@ class LSTMModel(nn.Module):
         tag_space = self.linear(lstm_out.view(20, -1))
         tag_scores = F.log_softmax(tag_space, dim=1)
         return tag_scores
+
+
+class CNNClassifier(nn.Module):
+    def __init__(self, n_filters=32, kernel_size=5, linear_dim=51):
+        super(CNNClassifier, self).__init__()
+
+        self.n_filters = n_filters
+        self.kernel_size = kernel_size
+        self.linear_dim = linear_dim
+        self.cnn = nn.Sequential(
+            nn.Conv1d(
+                in_channels=1,
+                out_channels=self.n_filters,
+                kernel_size=self.kernel_size
+            ),
+            nn.ReLU(),
+            nn.Conv1d(
+                in_channels=self.n_filters,
+                out_channels=self.n_filters,
+                kernel_size=self.kernel_size
+            ),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.MaxPool1d(2),
+        )
+        self.linear = nn.Sequential(
+            nn.Linear(self.linear_dim*self.n_filters, 128),
+            nn.ReLU(),
+            nn.Linear(128,32),
+        )
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        x = self.cnn(x)
+        x = x.view(len(x), -1)
+        x = self.linear(x)
+        return x
