@@ -169,3 +169,45 @@ class DeepCNNClassifier(nn.Module):
         x = x.view(len(x), -1)
         x = self.linear(x)
         return x
+
+
+class ShallowCNNClassifier(nn.Module):
+    def __init__(self, n_filters=128, kernel_size=5, linear_dim=53):
+        super(ShallowCNNClassifier, self).__init__()
+
+        self.n_filters = n_filters
+        self.kernel_size = kernel_size
+        self.linear_dim = linear_dim
+        self.cnn = nn.Sequential(
+            nn.Conv1d(
+                in_channels=1,
+                out_channels=self.n_filters,
+                kernel_size=self.kernel_size
+            ),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.MaxPool1d(2),
+        )
+        self.linear = nn.Sequential(
+            nn.Linear(self.linear_dim*self.n_filters, 512),
+            nn.ReLU(),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256,32),
+        )
+        self.cnn.apply(ShallowCNNClassifier.init_weights)
+        self.linear.apply(ShallowCNNClassifier.init_weights)
+
+    @classmethod
+    def init_weights(cls, m):
+        if isinstance(m ,(nn.Linear, nn.Conv1d)):
+            torch.nn.init.xavier_uniform_(m.weight)
+            m.bias.data.fill_(0.01)
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        x = self.cnn(x)
+        x = x.view(len(x), -1)
+        x = self.linear(x)
+        return x
+
