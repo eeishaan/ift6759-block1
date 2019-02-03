@@ -278,28 +278,29 @@ def train_cnn():
         }, os.path.join(MODEL_DIR, "latest_train.pt"))
         model.eval()
         print('Epoch : %d Loss : %.3f ' % (e, running_loss))
-        true_labels = []
-        predicted = []
-        for _, sample in enumerate(validation_dataloader):
-            data, labels = sample
-            data, labels, boundaries = clipper(data, labels)
-            data = data.to(device)
-            labels = labels.long().to(device)
-            l = labels[:, -1]
-            outputs = model(data)
-            _, preds = torch.max(outputs.data, 1)
-            preds = preds.cpu().numpy()
-            last_boundary = 0
-            for b in boundaries:
-                # append the label with most votes
-                predicted.append(np.argmax(np.bincount(preds[last_boundary:b])))
-                true_labels.append(int(l[last_boundary]))
-                last_boundary = b
-        print(len(true_labels), len(predicted))
-        r_score = recall_score(true_labels, predicted, average='macro')
-        acc = accuracy_score(true_labels, predicted)
-        print('Epoch : %d Validation score : %.3f Accuracy : %.3f' % (e, r_score, acc))
-        print('--------------------------------------------------------------')
+        with torch.no_grad():
+            true_labels = []
+            predicted = []
+            for _, sample in enumerate(validation_dataloader):
+                data, labels = sample
+                data, labels, boundaries = clipper(data, labels)
+                data = data.to(device)
+                labels = labels.long().to(device)
+                l = labels[:, -1]
+                outputs = model(data)
+                _, preds = torch.max(outputs.data, 1)
+                preds = preds.cpu().numpy()
+                last_boundary = 0
+                for b in boundaries:
+                    # append the label with most votes
+                    predicted.append(np.argmax(np.bincount(preds[last_boundary:b])))
+                    true_labels.append(int(l[last_boundary]))
+                    last_boundary = b
+            print(len(true_labels), len(predicted))
+            r_score = recall_score(true_labels, predicted, average='macro')
+            acc = accuracy_score(true_labels, predicted)
+            print('Epoch : %d Validation score : %.3f Accuracy : %.3f' % (e, r_score, acc))
+            print('--------------------------------------------------------------')
     torch.save({
         'label_mapping': remap_transform.map,
         'model_state': model.state_dict()
