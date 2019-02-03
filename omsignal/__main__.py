@@ -13,7 +13,8 @@ from torchvision.transforms import Compose
 
 from omsignal.constants import (MODEL_DIR, MODEL_PATH, RESULT_DIR,
                                 TRAIN_LABELED_FILE, VALIDATION_LABELED_FILE)
-from omsignal.model import CNNClassifier, LSTMModel
+from omsignal.model import (CNNClassifier, DeepCNNClassifier, LSTMModel,
+                            ShallowCNNClassifier)
 from omsignal.utils.augmentation import SignalShift
 from omsignal.utils.dim_reduction import SVDTransform, TSNETransform
 from omsignal.utils.loader import (OmsignalDataset, get_dataloader,
@@ -243,10 +244,14 @@ def train_cnn():
         transform=transform)
     validation_dataloader = get_dataloader(validation_dataset, batch_size=10, num_workers=4, shuffle=True)
     
-    n_filters, kernel_size, linear_dim = 32, 5, 51
+    # normal cnn values
+    # n_filters, kernel_size, linear_dim = 32, 5, 51
+
+    # shallow cnn values
+    n_filters, kernel_size, linear_dim = 128, 5, 53
 
     # initialize LSTM model
-    model = CNNClassifier(n_filters, kernel_size, linear_dim).to(device)
+    model = ShallowCNNClassifier(n_filters, kernel_size, linear_dim).to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), weight_decay=0.5)
@@ -255,9 +260,11 @@ def train_cnn():
     for e in range(epochs):
         model.train()
         running_loss = 0
+        true_labels = []
+        predicted = []
         for _, sample in enumerate(train_dataloader):
             data, labels = sample
-            data, labels, _ = clipper(data, labels)
+            data, labels, boundaries = clipper(data, labels)
             data = data.to(device)
             labels = labels.long().to(device)
 
@@ -269,6 +276,16 @@ def train_cnn():
             running_loss += loss.item()
             loss.backward()
             optimizer.step()
+            with torch.no_grad():
+                _, preds = torch.max(outputs.data, 1)
+                preds = preds.cpu().numpy()
+                last_boundary = 0
+                for b in boundaries:
+                    # append the label with most votes
+                    predicted.append(np.argmax(np.bincount(preds[last_boundary:b])))
+                    true_labels.append(int(l[last_boundary]))
+                    last_boundary = b
+
         torch.save({
             'epoch': e,
             'model_state_dict': model.state_dict(),
@@ -277,7 +294,8 @@ def train_cnn():
             'label_mapping': remap_transform.map
         }, os.path.join(MODEL_DIR, "latest_train.pt"))
         model.eval()
-        print('Epoch : %d Loss : %.3f ' % (e, running_loss))
+        acc = accuracy_score(true_labels, predicted)
+        print('Epoch : %d Loss : %.3f Train Accuracy : %.3f' % (e, running_loss, acc))
         with torch.no_grad():
             true_labels = []
             predicted = []
