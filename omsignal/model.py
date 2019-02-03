@@ -144,13 +144,18 @@ class DeepCNNClassifier(nn.Module):
 
         )
         self.linear = nn.Sequential(
-            nn.Linear(2048, 32),
+            nn.Linear(1536, 512),
             nn.ELU(),
-            nn.BatchNorm1d(2048),
+            nn.Linear(512, 256),
+            nn.ELU(),
+            nn.Linear(256, 128),
+            nn.ELU(),
+            nn.Linear(128, 32),
+            nn.BatchNorm1d(32),
             nn.Dropout(0.5),
         )
-        self.cnn.apply(CNNClassifier.init_weights)
-        self.linear.apply(CNNClassifier.init_weights)
+        self.cnn.apply(DeepCNNClassifier.init_weights)
+        self.linear.apply(DeepCNNClassifier.init_weights)
 
     @classmethod
     def init_weights(cls, m):
