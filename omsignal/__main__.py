@@ -257,7 +257,7 @@ def train_cnn():
         running_loss = 0
         for _, sample in enumerate(train_dataloader):
             data, labels = sample
-            data, labels = clipper(data, labels)
+            data, labels, _ = clipper(data, labels)
             data = data.to(device)
             labels = labels.long().to(device)
 
@@ -282,14 +282,19 @@ def train_cnn():
         predicted = []
         for _, sample in enumerate(validation_dataloader):
             data, labels = sample
-            data, labels = clipper(data, labels)
+            data, labels, boundaries = clipper(data, labels)
             data = data.to(device)
             labels = labels.long().to(device)
             l = labels[:, -1]
-            true_labels.extend(l.cpu().numpy())
             outputs = model(data)
             _, preds = torch.max(outputs.data, 1)
-            predicted.extend(preds.cpu().numpy())
+            last_boundary = 0
+            for b in boundaries:
+                # append the label with most votes
+                predicted.append(np.argmax(np.bincount(preds[last_boundary:b].numpy())))
+                true_labels.append(int(preds[last_boundary]))
+                last_boundary = b
+        print(len(true_labels), len(predicted))
         r_score = recall_score(true_labels, predicted, average='macro')
         acc = accuracy_score(true_labels, predicted)
         print('Epoch : %d Validation score : %.3f Accuracy : %.3f' % (e, r_score, acc))
