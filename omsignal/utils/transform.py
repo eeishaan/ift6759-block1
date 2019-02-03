@@ -236,6 +236,7 @@ class ClipAndFlatten(object):
         for batch in range(len(y)):
             relevant_rows = int((y[batch, :, 3].ge(0) == 0).nonzero()[0])
             new_boundary = last_boundary + relevant_rows
+            last_boundary = new_boundary
             boundaries.append(new_boundary)
             res_x = torch.cat((res_x, x[batch, :relevant_rows, :]))
             res_y = torch.cat((res_y, y[batch, :relevant_rows, :]))

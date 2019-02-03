@@ -288,11 +288,12 @@ def train_cnn():
             l = labels[:, -1]
             outputs = model(data)
             _, preds = torch.max(outputs.data, 1)
+            preds = preds.cpu().numpy()
             last_boundary = 0
             for b in boundaries:
                 # append the label with most votes
-                predicted.append(np.argmax(np.bincount(preds[last_boundary:b].numpy())))
-                true_labels.append(int(preds[last_boundary]))
+                predicted.append(np.argmax(np.bincount(preds[last_boundary:b])))
+                true_labels.append(int(l[last_boundary]))
                 last_boundary = b
         print(len(true_labels), len(predicted))
         r_score = recall_score(true_labels, predicted, average='macro')
