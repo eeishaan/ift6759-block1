@@ -229,11 +229,15 @@ class ClipAndFlatten(object):
 
     def __call__(self, x, y):
         assert len(x) == len(y)
+        boundaries = []
+        last_boundary = 0
         res_x, res_y = \
             x.new_empty((1, self.segment_size)), y.new_empty((1, self.label_size))
         for batch in range(len(y)):
             relevant_rows = int((y[batch, :, 3].ge(0) == 0).nonzero()[0])
+            new_boundary = last_boundary + relevant_rows
+            boundaries.append(new_boundary)
             res_x = torch.cat((res_x, x[batch, :relevant_rows, :]))
             res_y = torch.cat((res_y, y[batch, :relevant_rows, :]))
             
-        return res_x[1:, :], res_y[1:, :]
+        return res_x[1:, :], res_y[1:, :], boundaries
