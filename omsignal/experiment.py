@@ -3,9 +3,9 @@
 import torch
 
 
-class OmModel():
+class OmExperiment():
     '''
-    Base class for models
+    Base class for experiments
     '''
 
     def __init__(
@@ -33,7 +33,7 @@ class OmModel():
         pass
 
     def after_train(self, ctx):
-        self.save_model(ctx)
+        self.save_experiment(ctx)
 
     def before_minibatch_eval(self, ctx, data, labels):
         return data, labels
@@ -61,13 +61,13 @@ class OmModel():
                 self.after_minibatch_eval(ctx, outputs, labels)
             self.after_eval(ctx)
 
-    def load_model(self):
+    def load_experiment(self):
         checkpoint = torch.load(self._model_file)
         self._model.load_state_dict(checkpoint['model_state_dict'])
         self._optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self._start_epoch = checkpoint['epoch']
 
-    def save_model(self, ctx):
+    def save_experiment(self, ctx):
         save_dict = {
             'epoch': ctx.get('epoch'),
             'model_state_dict': self._model.state_dict(),
