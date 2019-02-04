@@ -11,7 +11,7 @@ from scipy import signal
 from omsignal.utils.transform import OmTransform
 
 
-class Invert(object):
+class Invert(OmTransform):
     '''
     Invert the signal
     '''
@@ -149,7 +149,7 @@ class SignalSegmenter(OmTransform):
         return all_templates, all_labels
 
 
-class SignalShift(object):
+class SignalShift(OmTransform):
     '''
     Shift the signal 
     '''
