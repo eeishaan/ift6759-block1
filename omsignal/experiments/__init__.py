@@ -16,10 +16,10 @@ class OmExperiment():
             optimizer_params,
             criterion_cls,
             criterion_params,
-            model_file):
+            experiment_file):
         self._criterion = criterion_cls(**criterion_params)
         self._model = model_cls(**model_params)
-        self._model_file = model_file
+        self._experiment_file = experiment_file
         self._optimizer = optimizer_cls(**optimizer_params)
         self._start_epoch = 0
 
@@ -62,7 +62,7 @@ class OmExperiment():
             self.after_eval(ctx)
 
     def load_experiment(self):
-        checkpoint = torch.load(self._model_file)
+        checkpoint = torch.load(self._experiment_file)
         self._model.load_state_dict(checkpoint['model_state_dict'])
         self._optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self._start_epoch = checkpoint['epoch']
@@ -74,7 +74,7 @@ class OmExperiment():
             'optimizer_state_dict': self._optimizer.state_dict(),
         }
         self.before_save(save_dict)
-        torch.save(save_dict, self._model_file)
+        torch.save(save_dict, self._experiment_file)
 
     def train(self, dataloader, epochs, start_epoch=None):
         start_epoch = start_epoch if start_epoch is not None else self._start_epoch
