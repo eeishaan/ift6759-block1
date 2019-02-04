@@ -76,8 +76,8 @@ class OmModel():
         self.before_save(save_dict)
         torch.save(save_dict, self._model_file)
 
-    def train(self, dataloader, epochs, start_epoch=0):
-        start_epoch = start_epoch if start_epoch != 0 else self._start_epoch
+    def train(self, dataloader, epochs, start_epoch=None):
+        start_epoch = start_epoch if start_epoch is not None else self._start_epoch
         for epoch in range(start_epoch, epochs):
             self._model.train()
             ctx = {
