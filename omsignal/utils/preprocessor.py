@@ -1,3 +1,8 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
 class Preprocessor(nn.Module):
 
     def __init__(
@@ -22,11 +27,12 @@ class Preprocessor(nn.Module):
 
         self.mvKernelSize = (mv_window_size * num_samples_per_second) + 1
 
-    def forward(self, x):
+    def forward(self, *args):
 
         with torch.no_grad():
-            x = x.unsqueeze(0)
-            
+            x, label = args[0]
+
+            x = x.view(1, 1, -1)
 
             # Remove window mean and standard deviation
 
@@ -54,5 +60,6 @@ class Preprocessor(nn.Module):
         # Don't backpropagate further
 
         x = x.detach().contiguous()
+        x = x.view(-1)
 
-        return x.squeeze(0)
+        return x, label
