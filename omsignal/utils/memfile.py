@@ -6,14 +6,14 @@ Module for reading/writing numpy memfile
 import numpy as np
 
 
-def read_memfile(filename: str, shape: tuple, dtype: str='float32') -> np.ndarray:
+def read_memfile(filename: str, shape: tuple, dtype: str = 'float32') -> np.ndarray:
     """Read binary data and return as a numpy array of desired shape
 
     Args:
         filename: Path of memfile.
         shape: Shape of numpy array.
         dtype (:obj:`str`, optional): numpy dtype. Defaults to ``float32``.
-    
+
     Returns:
         ndarray: A numpy ndarray with data from memfile.
     """

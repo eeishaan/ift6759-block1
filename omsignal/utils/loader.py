@@ -14,7 +14,7 @@ class OmsignalDataset(Dataset):
     '''
 
     def __init__(self, file_path,
-            shape=(160, 3754), dtype='float32', transform=None):
+                 shape=(160, 3754), dtype='float32', transform=None):
         self.data = read_memfile(file_path, shape=shape, dtype=dtype)
         self.transform = transform
 
@@ -33,7 +33,7 @@ def get_dataloader(dataset, shuffle=True, batch_size=20, num_workers=4):
     Construct a dataloader
     '''
     return DataLoader(dataset, batch_size=batch_size,
-        shuffle=shuffle, num_workers=num_workers)
+                      shuffle=shuffle, num_workers=num_workers)
 
 
 def get_vector_and_labels(file_path: str) -> tuple:
@@ -41,10 +41,10 @@ def get_vector_and_labels(file_path: str) -> tuple:
 
     Args:
         file_path: numpy memfile file containing the data
-    
+
     Returns:
         tuple: (raw_data_ndarray, label_ndarray)
-        
+
         First element contains the raw data ndarray, second element
         is the label ndarray
     """
