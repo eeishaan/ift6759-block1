@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 Module with basic tranformations
 '''
@@ -32,9 +33,6 @@ class ClipAndFlatten(OmTransform):
             
         return res_x[1:, :], res_y[1:, :], boundaries
 
-    def state(self):
-        super().state()
-
 
 class LabelSeparator(OmTransform):
     '''
@@ -45,9 +43,6 @@ class LabelSeparator(OmTransform):
     
     def __call__(self, x):
         return x[:-1*self.label_len], x[-1*self.label_len:]
-
-    def state(self):
-        super().state()
 
 
 class RemapLabels(OmTransform):
@@ -82,9 +77,6 @@ class ToNumpy(OmTransform):
     def __call__(self, X):
         return X.numpy()
 
-    def state(self):
-        super().state()
-
 
 class ToTensor(OmTransform):
     '''
@@ -96,6 +88,3 @@ class ToTensor(OmTransform):
     
     def __call__(self, X):
         return torch.from_numpy(X)
-
-    def state(self):
-        super().state()

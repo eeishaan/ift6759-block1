@@ -1,11 +1,11 @@
-from abc import ABC, abstractmethod
+#!/usr/bin/env python3
+from abc import ABC
 
 class OmTransform(ABC):
     '''
     Abstract base class for custom transformers
     '''
 
-    @abstractmethod
     def state(self):
         '''
         This method should return the state of the transformer
