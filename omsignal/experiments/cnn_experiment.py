@@ -91,6 +91,7 @@ class RegressionNetEperiment(OmExperiment):
             'loss_pr_mean': 0,
             'loss_tr_mean': 0,
             'loss_rr_std': 0,
+            'labels': [],
         })
 
     def before_eval(self, ctx):
@@ -126,7 +127,7 @@ class RegressionNetEperiment(OmExperiment):
         message += "Train RR STD loss: {} \n"\
             .format(ctx['loss_rr_std'].item())
         message += "Train TR Mean loss: {} \n"\
-            .format(ctx['loss_tr_std'].item())
+            .format(ctx['loss_tr_mean'].item())
         message += "Train PR Mean loss: {} \n"\
             .format(ctx['loss_pr_mean'].item())
         message += "Train Kendall TR: {} \n".format(k_tr_mean)
