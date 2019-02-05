@@ -22,7 +22,6 @@ class SimpleNetExperiment(OmExperiment):
             criterion_params,
             exp_file,
             device)
-        self.clipper = ClipAndFlatten(110)
 
     def before_train(self, ctx):
         ctx['loss_total'] = 0
@@ -68,11 +67,3 @@ class SimpleNetExperiment(OmExperiment):
         acc = (1 - ((1 - acc)/(1-1/32)))
         message = "Eval accuracy: {}".format(acc)
         print(message)
-
-    def before_minibatch_eval(self, ctx, data, labels):
-        return self.before_forwardp(ctx, data, labels)
-
-    def before_forwardp(self, ctx, data, labels):
-        data, labels, boundaries = self.clipper(data, labels)
-        ctx['boundaries'] = boundaries
-        return data, labels[:, -1].long()
