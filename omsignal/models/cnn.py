@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from omsignal.utils.preprocessor import Preprocessor
+from omsignal.utils.transform.preprocessor import Preprocessor
 
 
 class CNNClassifier(nn.Module):
@@ -183,4 +183,24 @@ class ShallowCNNClassifier(nn.Module):
         x = self.cnn(x)
         x = x.view(len(x), -1)
         x = self.linear(x)
+        return x
+
+
+class SimpleNet(nn.Module):
+    def __init__(self):
+        super(SimpleNet, self).__init__()
+        self.conv1 = nn.Conv1d(1, 10, kernel_size=5)  # 22
+        self.conv2 = nn.Conv1d(10, 20, kernel_size=5)  # 18
+        self.drop_conv2 = nn.Dropout2d(p=0.5)  # 4
+        self.fc1 = nn.Linear(60, 50)
+        self.drop_lin = nn.Dropout(p=0.5)
+        self.fc2 = nn.Linear(50, 32)
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        x = F.relu(F.max_pool1d(self.conv1(x), 5))
+        x = F.relu(F.max_pool1d(self.drop_conv2(self.conv2(x)), 5))
+        x = x.view(-1, 60)
+        x = F.relu(self.drop_lin(self.fc1(x)))
+        x = F.log_softmax(self.fc2(x), dim=1)
         return x

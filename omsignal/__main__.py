@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
-def main():
-    '''
-    Main function
-    '''
-    pass
-
+from omsignal.runner import run_cnn_exp
 
 if __name__ == '__main__':
-    main()
+    run_cnn_exp()
