@@ -54,6 +54,10 @@ class OmExperiment():
     def before_train(self, ctx):
         pass
 
+    def compute_loss(self, ctx, outputs, labels):
+        loss = self._criterion(outputs, labels)
+        return loss
+
     def eval(self, dataloader):
         self._model.eval()
         with torch.no_grad():
@@ -96,7 +100,7 @@ class OmExperiment():
                 data, labels = self.before_forwardp(ctx, data, labels)
                 self._optimizer.zero_grad()
                 outputs = self._model(data)
-                loss = self._criterion(outputs, labels)
+                loss = self.compute_loss(ctx, outputs, labels)
                 ctx['running_loss'] += loss
                 loss.backward()
                 self._optimizer.step()

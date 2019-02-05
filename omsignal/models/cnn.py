@@ -204,3 +204,37 @@ class SimpleNet(nn.Module):
         x = F.relu(self.drop_lin(self.fc1(x)))
         x = F.log_softmax(self.fc2(x), dim=1)
         return x
+
+
+class RegressionNet(nn.Module):
+    def __init__(self):
+        super(RegressionNet, self).__init__()
+        self.conv1 = nn.Conv1d(1, 10, kernel_size=3)  # 22
+        self.conv2 = nn.Conv1d(10, 20, kernel_size=3)  # 18
+        self.conv3 = nn.Conv1d(20, 20, kernel_size=3)  # 18
+        self.drop_conv3 = nn.Dropout2d(p=0.5)  # 4
+
+        self.fc1RR_std = nn.Linear(60, 30)
+        self.fc2RR_std = nn.Linear(30, 1)
+        self.fc1TR_mean = nn.Linear(60, 30)
+        self.fc2TR_mean = nn.Linear(30, 1)
+        self.fc1PR_mean = nn.Linear(60, 30)
+        self.fc2PR_mean = nn.Linear(30, 1)
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        x = F.relu(F.max_pool1d(self.conv1(x), 3))
+        x = F.relu(F.max_pool1d(self.conv2(x), 3))
+        x = F.relu(F.max_pool1d(self.drop_conv3(self.conv3(x)), 3))
+        x = x.view(-1, 60)
+
+        xRR_std = F.relu((self.fc1RR_std(x)))
+        xRR_std = self.fc2RR_std(xRR_std)
+
+        xTR_mean = F.relu((self.fc1TR_mean(x)))
+        xTR_mean = self.fc2TR_mean(xTR_mean)
+
+        xPR_mean = F.relu((self.fc1PR_mean(x)))
+        xPR_mean = self.fc2PR_mean(xPR_mean)
+
+        return xRR_std, xTR_mean, xPR_mean
