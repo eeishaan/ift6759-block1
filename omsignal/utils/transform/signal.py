@@ -124,10 +124,9 @@ class SignalSegmenter(OmTransform):
         template_found = 0
         max_len = 200
         all_templates = data.new_empty((max_len, self.segment_size))
-        for recording in range(len(R_peak)):
+        half_size_int = int(self.segment_size//2)
+        for recording in range(len(data)):
             # generate the template
-            half_size_int = int(self.segment_size//2)
-
             for i in R_peak[recording][1:-1]:
                 new_heart_beat = data[recording][int(
                     i)-int(half_size_int*0.8): int(i)+int(half_size_int*1.2)]
