@@ -43,8 +43,8 @@ def run_cnn_exp():
 
     # create segments
     segmenter = SignalSegmenter()
-    train_data, train_labels = segmenter(train_data.cpu().numpy())
-    valid_data, valid_labels = segmenter(valid_data.cpu().numpy())
+    train_data, train_labels = segmenter(train_data)
+    valid_data, valid_labels = segmenter(valid_data)
 
     # create a second level of label mapping
     row_label_mapping_train = {i: j for i, j in enumerate(train_labels[:, -1])}

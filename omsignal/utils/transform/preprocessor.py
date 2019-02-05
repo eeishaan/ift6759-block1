@@ -93,7 +93,7 @@ class SignalSegmenter(object):
         fs_wd_size: int
             size of the moving window used in the calculation of the feature signal FS
         threshold: int
-            FS is compared to the threshold to determined if its a QRS zone. 
+            FS is compared to the threshold to determined if its a QRS zone.
         """
         R_peak = []
 
@@ -146,7 +146,7 @@ class SignalSegmenter(object):
     def __call__(self, data):
 
         r_peak = SignalSegmenter.detect_R_peak(data)
-
+        data = data.cpu().numpy()
         all_segments = []
         all_ecg_ids = []
         half_size_int = int(self.segment_size//2)
@@ -154,7 +154,7 @@ class SignalSegmenter(object):
         for recording in range(len(data)):
             segments = []
             ecg_ids = []
-            for i in r_peak[recording][1:-1]:
+            for i in r_peak[recording][1: -1]:
                 new_heart_beat = data[recording][int(
                     i)-int(half_size_int*0.8): int(i)+int(half_size_int*1.2)]
                 if len(new_heart_beat) != 110:
@@ -165,5 +165,4 @@ class SignalSegmenter(object):
             all_segments.append(segments)
             all_ecg_ids.append(ecg_ids)
 
-        #listoftemplate = [hearth_beat for hearth_beat in template for template in listoftemplate]
         return np.array(all_segments), np.array(all_ecg_ids)
