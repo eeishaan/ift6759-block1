@@ -43,15 +43,15 @@ def run_cnn_exp():
 
     # create segments
     segmenter = SignalSegmenter()
-    train_data, train_labels = segmenter(train_data)
-    valid_data, valid_labels = segmenter(valid_data)
+    train_data, train_ids = segmenter(train_data)
+    valid_data, valid_ids = segmenter(valid_data)
 
     # create a second level of label mapping
     row_label_mapping_train = {i: j for i, j in enumerate(train_labels[:, -1])}
     row_label_mapping_valid = {i: j for i, j in enumerate(valid_labels[:, -1])}
 
-    train_labels = np.array([row_label_mapping_train[i] for i in train_labels])
-    valid_labels = np.array([row_label_mapping_valid[i] for i in valid_labels])
+    train_labels = np.array([row_label_mapping_train[i] for i in train_ids])
+    valid_labels = np.array([row_label_mapping_valid[i] for i in valid_ids])
 
     # create dataloaders
     train_data = torch.Tensor(train_data)

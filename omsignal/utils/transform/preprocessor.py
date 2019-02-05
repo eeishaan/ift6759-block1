@@ -162,7 +162,7 @@ class SignalSegmenter(object):
                 segments.append(new_heart_beat)
                 ecg_ids.append(recording)
 
-            all_segments.append(segments)
-            all_ecg_ids.append(ecg_ids)
+            all_segments.extend(segments)
+            all_ecg_ids.extend(ecg_ids)
 
         return np.array(all_segments), np.array(all_ecg_ids)

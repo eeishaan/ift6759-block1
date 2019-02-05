@@ -29,14 +29,9 @@ class SimpleNetExperiment(OmExperiment):
         ctx['true_labels'] = []
 
     def after_forwardp(self, ctx, outputs, labels):
-        pred = torch.argmax(outputs, 1).cpu().numpy()
-        last_boundary = 0
-        for b in ctx['boundaries']:
-            # append the label with most votes
-            ctx['predicted'].append(
-                np.argmax(np.bincount(pred[last_boundary:b])))
-            ctx['true_labels'].append(int(labels[last_boundary]))
-            last_boundary = b
+        pred = torch.argmax(outputs, 1)
+        ctx['predicted'].extend(pred.cpu().numpy())
+        ctx['true_labels'].extend(labels.cpu().numpy())
 
     def after_train(self, ctx):
         super().after_train(ctx)
