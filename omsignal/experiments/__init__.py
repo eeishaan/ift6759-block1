@@ -16,11 +16,15 @@ class OmExperiment():
             optimizer_params,
             criterion_cls,
             criterion_params,
-            experiment_file):
+            experiment_file,
+            device):
         self._criterion = criterion_cls(**criterion_params)
         self._model = model_cls(**model_params)
+        self._device = device
+        self._model.to(device)
         self._experiment_file = experiment_file
-        self._optimizer = optimizer_cls(**optimizer_params)
+        self._optimizer = optimizer_cls(
+            self._model.parameters(), **optimizer_params)
         self._start_epoch = 0
 
     def after_eval(self, ctx):
@@ -55,7 +59,8 @@ class OmExperiment():
         with torch.no_grad():
             ctx = {}
             self.before_eval(ctx)
-            for _, (data, labels) in dataloader:
+            for _, (data, labels) in enumerate(dataloader):
+                data, labels = data.to(self._device), labels.to(self._device)
                 data, labels = self.before_minibatch_eval(ctx, data, labels)
                 outputs = self._model(data)
                 self.after_minibatch_eval(ctx, outputs, labels)
@@ -76,20 +81,23 @@ class OmExperiment():
         self.before_save(save_dict)
         torch.save(save_dict, self._experiment_file)
 
-    def train(self, dataloader, epochs, start_epoch=None):
+    def train(self, dataloader, epochs, validation_dataloader=None, start_epoch=None):
         start_epoch = start_epoch if start_epoch is not None else self._start_epoch
         for epoch in range(start_epoch, epochs):
             self._model.train()
             ctx = {
-                'epoch': epoch
+                'epoch': epoch,
+                'running_loss': 0,
+                'val_loader': validation_dataloader
             }
             self.before_train(ctx)
             for _, (data, labels) in enumerate(dataloader):
+                data, labels = data.to(self._device), labels.to(self._device)
                 data, labels = self.before_forwardp(ctx, data, labels)
                 self._optimizer.zero_grad()
                 outputs = self._model(data)
                 loss = self._criterion(outputs, labels)
-                running_loss += loss
+                ctx['running_loss'] += loss
                 loss.backward()
                 self._optimizer.step()
                 self.after_forwardp(ctx, outputs, labels)
