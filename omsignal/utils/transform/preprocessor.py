@@ -31,9 +31,12 @@ class Preprocessor(OmTransform):
 
     def __call__(self, *args):
 
-        x, label = args[0]
-
-        x = x.view(1, 1, -1)
+        if len(args[0]) == 2:
+            x, label = args[0]
+            x = x.view(1, 1, -1)
+        else:
+            x = args[0]
+            x = x.unsqueeze(0)
 
         # Remove window mean and standard deviation
 
@@ -60,6 +63,8 @@ class Preprocessor(OmTransform):
 
         # Don't backpropagate further
 
-        x = x.view(-1)
-
-        return x, label
+        if len(args[0]) == 2:
+            x = x.view(-1)
+            return x, label
+        else:
+            return x.squeeze(0)
