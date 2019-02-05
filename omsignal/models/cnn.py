@@ -203,3 +203,4 @@ class SimpleNet(nn.Module):
         x = x.view(-1, 60)
         x = F.relu(self.drop_lin(self.fc1(x)))
         x = F.log_softmax(self.fc2(x), dim=1)
+        return x
