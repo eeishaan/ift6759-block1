@@ -75,4 +75,4 @@ class SimpleNetExperiment(OmExperiment):
     def before_forwardp(self, ctx, data, labels):
         data, labels, boundaries = self.clipper(data, labels)
         ctx['boundaries'] = boundaries
-        return data, labels
+        return data, labels[:, -1].long()
