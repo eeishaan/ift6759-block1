@@ -101,9 +101,9 @@ class RegressionNetEperiment(OmExperiment):
 
     def after_forwardp(self, ctx, outputs, labels):
         rr_std, tr_mean, pr_mean = outputs
-        ctx['rr_std'].append(rr_std.item())
-        ctx['tr_mean'].append(tr_mean.item())
-        ctx['pr_mean'].append(pr_mean.item())
+        ctx['rr_std'].extend(rr_std.tolist())
+        ctx['tr_mean'].extend(tr_mean.tolist())
+        ctx['pr_mean'].extend(pr_mean.tolist())
         ctx['labels'].extend(labels.tolist())
 
     def after_train(self, ctx):
