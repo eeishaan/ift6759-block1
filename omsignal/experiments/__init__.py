@@ -59,7 +59,7 @@ class OmExperiment():
         with torch.no_grad():
             ctx = {}
             self.before_eval(ctx)
-            for _, (data, labels) in dataloader:
+            for _, (data, labels) in enumerate(dataloader):
                 data, labels = data.to(self._device), labels.to(self._device)
                 data, labels = self.before_minibatch_eval(ctx, data, labels)
                 outputs = self._model(data)
