@@ -36,7 +36,8 @@ class SimpleNetExperiment(OmExperiment):
         if epoch % 25 != 0:
             return
 
-        acc = recall_score(ctx['true_labels'], ctx['predicted'])
+        acc = recall_score(ctx['true_labels'],
+                           ctx['predicted'], average='macro')
         acc = (1 - ((1 - acc)/(1-1/32)))
         message = "Epoch: {} Train loss: {} accuracy: {}".format(
             epoch, ctx['running_loss'].item(), acc)
@@ -52,7 +53,8 @@ class SimpleNetExperiment(OmExperiment):
         self.after_forwardp(ctx, outputs, labels)
 
     def after_eval(self, ctx):
-        acc = recall_score(ctx['true_labels'], ctx['predicted'])
+        acc = recall_score(ctx['true_labels'],
+                           ctx['predicted'], average='macro')
         acc = (1 - ((1 - acc)/(1-1/32)))
         message = "Eval accuracy: {}".format(acc)
         print(message)
