@@ -1,11 +1,14 @@
 #!/usr/bin/evn python3
 
+import numpy as np
 import torch
-from torch.optim import SGD
-from torch.nn import NLLLoss
-from omsignal.experiments import OmExperiment
 from sklearn.metrics import accuracy_score, recall_score
+from torch.nn import NLLLoss
+from torch.optim import SGD
+
+from omsignal.experiments import OmExperiment
 from omsignal.models.cnn import SimpleNet
+from omsignal.utils.transform.basic import ClipAndFlatten
 
 
 class SimpleNetExperiment(OmExperiment):
@@ -19,6 +22,7 @@ class SimpleNetExperiment(OmExperiment):
             criterion_params,
             exp_file,
             device)
+        self.clipper = ClipAndFlatten(110)
 
     def before_train(self, ctx):
         ctx['loss_total'] = 0
@@ -26,9 +30,14 @@ class SimpleNetExperiment(OmExperiment):
         ctx['true_labels'] = []
 
     def after_forwardp(self, ctx, outputs, labels):
-        pred = torch.argmax(outputs, 1)
-        ctx['predicted'].extend(pred.cpu().numpy())
-        ctx['true_labels'].extend(labels.cpu().numpy())
+        pred = torch.argmax(outputs, 1).cpu().numpy()
+        last_boundary = 0
+        for b in ctx['boundaries']:
+            # append the label with most votes
+            ctx['predicted'].append(
+                np.argmax(np.bincount(pred[last_boundary:b])))
+            ctx['true_labels'].append(int(labels[last_boundary]))
+            last_boundary = b
 
     def after_train(self, ctx):
         super().after_train(ctx)
@@ -59,3 +68,11 @@ class SimpleNetExperiment(OmExperiment):
         acc = (1 - ((1 - acc)/(1-1/32)))
         message = "Eval accuracy: {}".format(acc)
         print(message)
+
+    def before_minibatch_eval(self, ctx, data, labels):
+        return self.before_forwardp(ctx, data, labels)
+
+    def before_forwardp(self, ctx, data, labels):
+        data, labels, boundaries = self.clipper(data, labels)
+        ctx['boundaries'] = boundaries
+        return data, labels
