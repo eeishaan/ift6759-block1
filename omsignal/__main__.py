@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torchvision.transforms import Compose
 
 from omsignal.constants import (MODEL_DIR, TRAIN_LABELED_FILE,
