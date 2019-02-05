@@ -31,6 +31,7 @@ class SimpleNetExperiment(OmExperiment):
         ctx['true_labels'].extend(labels.cpu().numpy())
 
     def after_train(self, ctx):
+        super().after_train(ctx)
         epoch = ctx['epoch']
 
         if epoch % 25 != 0:
