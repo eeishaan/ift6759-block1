@@ -88,9 +88,9 @@ class RegressionNetEperiment(OmExperiment):
             'tr_mean': [],
             'rr_std': [],
             'pr_mean': [],
-            'loss_PR_mean': 0,
-            'loss_TR_mean': 0,
-            'loss_RR_std': 0,
+            'loss_pr_mean': 0,
+            'loss_tr_mean': 0,
+            'loss_rr_std': 0,
         })
 
     def before_eval(self, ctx):

@@ -124,13 +124,13 @@ def run_regression_exp():
 
     # create dataloaders
     train_data = torch.Tensor(train_data)
-    train_labels = torch.LongTensor(train_labels)
+    train_labels = torch.FloatTensor(train_labels)
     train_dataset = torch.utils.data.TensorDataset(train_data, train_labels)
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=128, shuffle=True)
 
     valid_data = torch.Tensor(valid_data)
-    valid_labels = torch.LongTensor(valid_labels)
+    valid_labels = torch.FloatTensor(valid_labels)
     valid_dataset = torch.utils.data.TensorDataset(valid_data, valid_labels)
     valid_loader = torch.utils.data.DataLoader(
         valid_dataset, batch_size=128, shuffle=False)
