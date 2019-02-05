@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from omsignal.utils.preprocessor import Preprocessor
+from omsignal.utils.transform.preprocessor import Preprocessor
 
 
 class CNNClassifier(nn.Module):
