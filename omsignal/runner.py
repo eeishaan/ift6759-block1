@@ -138,7 +138,7 @@ def run_regression_exp():
     regnet_exp = RegressionNetEperiment(
         model_file,
         optimiser_params={
-            'lr': 0.1
+            'lr': 0.01
         },
         device=device
     )
