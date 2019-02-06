@@ -243,11 +243,11 @@ class RegressionNet(nn.Module):
 class MultiTaskModel(RegressionNet):
     def __init__(self):
         super(MultiTaskModel, self).__init__()
-         self.fc1_label = nn.Linear(60, 50)
+        self.fc1_label = nn.Linear(60, 50)
         self.drop_lin_label = nn.Dropout(p=0.5)
         self.fc2_label = nn.Linear(50, 32)
     
-    def forward(self, x)
+    def forward(self, x):
         x = x.unsqueeze(1)
         x = F.relu(F.max_pool1d(self.conv1(x), 3))
         x = F.relu(F.max_pool1d(self.conv2(x), 3))

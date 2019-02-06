@@ -288,7 +288,7 @@ class MultiTaskExperiment(OmExperiment):
         loss_pr_mean = self._criterion(PR_mean, labels[:, 0].unsqueeze(1))
         loss_tr_mean = self._criterion(TR_mean, labels[:, 1].unsqueeze(1))
         loss_rr_std = self._criterion(RR_std, labels[:, 2].unsqueeze(1))
-        loss_id = self._c_criterion(id_preds, labels[:, 3].unsqueeze(1))
+        loss_id = self._c_criterion(id_preds, labels[:, 3].long())
         ctx['loss_pr_mean'] += loss_pr_mean
         ctx['loss_tr_mean'] += loss_tr_mean
         ctx['loss_rr_std'] += loss_rr_std
