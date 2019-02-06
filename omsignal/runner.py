@@ -133,7 +133,7 @@ def run_regression_exp():
     valid_labels = torch.FloatTensor(valid_labels)
     valid_dataset = torch.utils.data.TensorDataset(valid_data, valid_labels)
     valid_loader = torch.utils.data.DataLoader(
-        valid_dataset, batch_size=160, shuffle=False)
+        valid_dataset, batch_size=160, shuffle=True)
 
     regnet_exp = RegressionNetEperiment(
         model_file,
@@ -145,5 +145,5 @@ def run_regression_exp():
     print('started training')
     regnet_exp.train(
         train_loader,
-        epochs=3000,
+        epochs=4000,
         validation_dataloader=valid_loader)

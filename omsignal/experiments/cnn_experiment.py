@@ -111,7 +111,7 @@ class RegressionNetEperiment(OmExperiment):
         super().after_train(ctx)
         epoch = ctx['epoch']
 
-        if epoch % 25 != 0:
+        if epoch % 500 != 0:
             return
         with torch.no_grad():
             tr_mean = ctx['tr_mean']
