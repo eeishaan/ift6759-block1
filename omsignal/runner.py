@@ -115,11 +115,11 @@ def run_regression_exp():
     row_label_mapping_valid = {i: j for i, j in enumerate(valid_labels[:, -1])}
 
     train_labels = np.array([
-        train_labels[i][:-1] + [row_label_mapping_train[i]] for i in train_ids
+        np.hstack((train_labels[i][:-1], [row_label_mapping_train[i]])) for i in train_ids
     ])
 
     valid_labels = np.array([
-        valid_labels[i][:-1] + [row_label_mapping_valid[i]] for i in valid_ids
+        np.hstack((valid_labels[i][:-1], [row_label_mapping_valid[i]])) for i in valid_ids
     ])
 
     # create dataloaders
@@ -127,13 +127,13 @@ def run_regression_exp():
     train_labels = torch.FloatTensor(train_labels)
     train_dataset = torch.utils.data.TensorDataset(train_data, train_labels)
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=128, shuffle=True)
+        train_dataset, batch_size=160, shuffle=True)
 
     valid_data = torch.Tensor(valid_data)
     valid_labels = torch.FloatTensor(valid_labels)
     valid_dataset = torch.utils.data.TensorDataset(valid_data, valid_labels)
     valid_loader = torch.utils.data.DataLoader(
-        valid_dataset, batch_size=128, shuffle=False)
+        valid_dataset, batch_size=160, shuffle=False)
 
     regnet_exp = RegressionNetEperiment(
         model_file,
