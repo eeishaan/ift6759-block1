@@ -102,9 +102,9 @@ class RegressionNetEperiment(OmExperiment):
 
     def after_forwardp(self, ctx, outputs, labels):
         rr_std, tr_mean, pr_mean = outputs
-        ctx['rr_std'].extend(rr_std.tolist())
-        ctx['tr_mean'].extend(tr_mean.tolist())
-        ctx['pr_mean'].extend(pr_mean.tolist())
+        ctx['rr_std'].extend(rr_std.detach().view(-1).tolist())
+        ctx['tr_mean'].extend(tr_mean.detach().view(-1).tolist())
+        ctx['pr_mean'].extend(pr_mean.detach().view(-1).tolist())
         ctx['labels'].extend(labels.tolist())
 
     def after_train(self, ctx):
@@ -113,31 +113,32 @@ class RegressionNetEperiment(OmExperiment):
 
         if epoch % 25 != 0:
             return
-        tr_mean = ctx['tr_mean']
-        pr_mean = ctx['pr_mean']
-        rr_std = ctx['rr_std']
-        labels = np.array(ctx['labels'])
-        k_pr_mean = kendalltau(pr_mean, labels[:, 0])[0]
-        k_tr_mean = kendalltau(tr_mean, labels[:, 1])[0]
-        k_rr_std = kendalltau(rr_std, labels[:, 2])[0]
-        kendall_avg = np.mean([k_pr_mean, k_tr_mean, k_rr_std])
+        with torch.no_grad():
+            tr_mean = ctx['tr_mean']
+            pr_mean = ctx['pr_mean']
+            rr_std = ctx['rr_std']
+            labels = np.array(ctx['labels'])
+            k_pr_mean = kendalltau(pr_mean, labels[:, 0])[0]
+            k_tr_mean = kendalltau(tr_mean, labels[:, 1])[0]
+            k_rr_std = kendalltau(rr_std, labels[:, 2])[0]
+            kendall_avg = np.mean([k_pr_mean, k_tr_mean, k_rr_std])
 
-        message = "Epoch : {} Train Loss: {} \n"\
-            .format(epoch, ctx['running_loss'])
-        message += "Train RR STD loss: {} \n"\
-            .format(ctx['loss_rr_std'].item())
-        message += "Train TR Mean loss: {} \n"\
-            .format(ctx['loss_tr_mean'].item())
-        message += "Train PR Mean loss: {} \n"\
-            .format(ctx['loss_pr_mean'].item())
-        message += "Train Kendall TR: {} \n".format(k_tr_mean)
-        message += "Train Kendall RR: {} \n".format(k_rr_std)
-        message += "Train Kendall PR: {} \n".format(k_pr_mean)
-        message += "Train Avg Kendall: {} \n".format(kendall_avg)
-        print(message)
-        val_loader = ctx.get('val_loader')
-        if val_loader is not None:
-            self.eval(val_loader)
+            message = "Epoch : {} Train Loss: {} \n"\
+                .format(epoch, ctx['running_loss'])
+            message += "Train RR STD loss: {} \n"\
+                .format(ctx['loss_rr_std'].item())
+            message += "Train TR Mean loss: {} \n"\
+                .format(ctx['loss_tr_mean'].item())
+            message += "Train PR Mean loss: {} \n"\
+                .format(ctx['loss_pr_mean'].item())
+            message += "Train Kendall TR: {} \n".format(k_tr_mean)
+            message += "Train Kendall RR: {} \n".format(k_rr_std)
+            message += "Train Kendall PR: {} \n".format(k_pr_mean)
+            message += "Train Avg Kendall: {} \n".format(kendall_avg)
+            print(message)
+            val_loader = ctx.get('val_loader')
+            if val_loader is not None:
+                self.eval(val_loader)
 
     def after_eval(self, ctx):
         tr_mean = ctx['tr_mean']
