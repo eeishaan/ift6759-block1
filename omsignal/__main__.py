@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-import numpy
-import torch
+import argparse
 
-numpy.random.seed(42)
-torch.manual_seed(42)
-
-from omsignal.runner import run_cnn_exp, run_regression_exp
-
+from omsignal.train import get_train_parser
+from omsignal.test import get_test_parser
 
 if __name__ == '__main__':
-    run_regression_exp()
+    parser = argparse.ArgumentParser(prog='omsignal')
+    subparsers = parser.add_subparsers(title="commands", dest="command")
+    get_train_parser(subparsers)
+    get_test_parser(subparsers)
+
+    args = parser.parse_args()
