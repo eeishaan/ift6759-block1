@@ -3,6 +3,7 @@
 Data loading routines
 '''
 
+import torch
 from torch.utils.data import DataLoader, Dataset
 
 from omsignal.utils.memfile import read_memfile
