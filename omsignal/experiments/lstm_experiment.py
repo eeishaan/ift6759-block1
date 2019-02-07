@@ -8,7 +8,7 @@ from omsignal.experiments import OmExperiment
 from omsignal.models.lstm import LSTMModel
 from omsignal.utils.transform.basic import ClipAndFlatten
 
-from omsignal.constants import CURRENT_DIR
+from omsignal.constants import CURR_DIR
 
 class LSTMExperiment(OmExperiment):
     def __init__(self,
