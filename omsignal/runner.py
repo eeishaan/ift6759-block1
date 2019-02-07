@@ -19,7 +19,7 @@ from omsignal.utils.transform.preprocessor import Preprocessor, SignalSegmenter,
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def run_cnn_exp():
+def run_cnn_classification():
     '''
     Main function
     '''
@@ -140,7 +140,7 @@ def run_lstm_exp():
         epochs=120,
         validation_dataloader=valid_loader)
 
-def run_regression_exp():
+def run_cnn_regression():
     '''
     Main function
     '''
@@ -207,7 +207,7 @@ def run_regression_exp():
         validation_dataloader=valid_loader)
 
 
-def run_multi_task_exp():
+def run_cnn_multi_task():
     '''
     Main function
     '''
