@@ -274,3 +274,31 @@ class RegressionNet(nn.Module):
         logger.debug(xPR_mean.shape)
 
         return xRR_std, xTR_mean, xPR_mean
+
+
+class MultiTaskModel(RegressionNet):
+    def __init__(self):
+        super(MultiTaskModel, self).__init__()
+        self.fc1_label = nn.Linear(60, 50)
+        self.drop_lin_label = nn.Dropout(p=0.5)
+        self.fc2_label = nn.Linear(50, 32)
+
+    def forward(self, x):
+        x = x.unsqueeze(1)
+        x = F.relu(F.max_pool1d(self.conv1(x), 3))
+        x = F.relu(F.max_pool1d(self.conv2(x), 3))
+        x = F.relu(F.max_pool1d(self.drop_conv3(self.conv3(x)), 3))
+        x = x.view(-1, 60)
+
+        xRR_std = F.relu((self.fc1RR_std(x)))
+        xRR_std = self.fc2RR_std(xRR_std)
+
+        xTR_mean = F.relu((self.fc1TR_mean(x)))
+        xTR_mean = self.fc2TR_mean(xTR_mean)
+
+        xPR_mean = F.relu((self.fc1PR_mean(x)))
+        xPR_mean = self.fc2PR_mean(xPR_mean)
+
+        x_label = F.relu(self.drop_lin_label(self.fc1_label(x)))
+        x_label = F.log_softmax(self.fc2_label(x_label), dim=1)
+        return xRR_std, xTR_mean, xPR_mean, x_label
