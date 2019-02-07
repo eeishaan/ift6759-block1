@@ -73,8 +73,9 @@ class OmExperiment():
     def load_experiment(self):
         checkpoint = torch.load(self._experiment_file)
         self._model.load_state_dict(checkpoint['model_state_dict'])
-        self._optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        self._start_epoch = checkpoint['epoch']
+        if 'optimizer_state_dict' in checkpoint:
+            self._optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self._start_epoch = checkpoint.get('epoch', 0)
 
     def save_experiment(self, ctx):
         save_dict = {
