@@ -28,16 +28,25 @@ class FFT(OmTransform):
     Fast fourier trasnform
     '''
 
-    def __init__(self, signal_ndim=1, normalized=False):
+    def __init__(self, signal_ndim=1, normalized=True):
         self.signal_ndim = signal_ndim
         self.normalized = normalized
 
     def __call__(self, X):
-        # add a new dimesion and fill it with zero
-        X.unsqueeze_(2)
-        X.index_fill_(1, torch.tensor([2]), 0)
-        out = torch.fft(X, 1)
-        return out
+        # takes a time-series x and returns the FFT
+        # input: x
+        # output : R and I; real and imaginary componenet of the real FFT
+        y = np.fft.rfft(X, norm='ortho')
+
+        real, im = np.real(y), np.imag(y)
+
+        if self.normalized:
+            real = real/np.max(real)
+            im = im/np.max(im)
+
+        fourier = real**2 + im**2
+        fourier = torch.from_numpy(fourier)
+        return fourier
 
 
 class SignalShift(OmTransform):
