@@ -15,9 +15,12 @@ from omsignal.experiments.lstm_experiment import LSTMExperiment
 from omsignal.utils.loader import get_vector_and_labels
 from omsignal.utils.transform.basic import (LabelSeparator, RemapLabels,
                                             ToTensor)
-from omsignal.utils.transform.preprocessor import Preprocessor, SignalSegmenter, LSTM_Segmenter
+from omsignal.utils.transform.preprocessor import (LSTM_Segmenter,
+                                                   Preprocessor,
+                                                   SignalSegmenter)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 
 def run_cnn_classification():
     '''
@@ -80,6 +83,7 @@ def run_cnn_classification():
         epochs=3000,
         validation_dataloader=valid_loader)
 
+
 def run_lstm_exp():
     """
     Main function
@@ -110,8 +114,10 @@ def run_lstm_exp():
     row_label_mapping_train = {i: j for i, j in enumerate(train_labels[:, -1])}
     row_label_mapping_valid = {i: j for i, j in enumerate(valid_labels[:, -1])}
 
-    train_labels = np.array([row_label_mapping_train[float(i)] for i in train_ids])
-    valid_labels = np.array([row_label_mapping_valid[float(i)] for i in valid_ids])
+    train_labels = np.array(
+        [row_label_mapping_train[float(i)] for i in train_ids])
+    valid_labels = np.array(
+        [row_label_mapping_valid[float(i)] for i in valid_ids])
 
     # create dataloaders
     train_data = torch.Tensor(train_data)
@@ -132,6 +138,10 @@ def run_lstm_exp():
             'lr': 0.0005,
             'weight_decay': 0.0001
         },
+        model_params={
+            'device': device,
+            'n_layers': 1,
+        },
         device=device
     )
     print('started training')
@@ -139,6 +149,7 @@ def run_lstm_exp():
         train_loader,
         epochs=120,
         validation_dataloader=valid_loader)
+
 
 def run_cnn_regression():
     '''
