@@ -36,6 +36,12 @@ class OmExperiment():
     def after_minibatch_eval(self, ctx, outputs, labels):
         pass
 
+    def after_minibatch_test(self, ctx, outputs):
+        pass
+
+    def after_test(self, ctx):
+        pass
+
     def after_train(self, ctx):
         self.save_experiment(ctx)
 
@@ -49,6 +55,9 @@ class OmExperiment():
         return data, labels
 
     def before_save(self, save_dict):
+        pass
+
+    def before_test(self, ctx):
         pass
 
     def before_train(self, ctx):
@@ -68,7 +77,7 @@ class OmExperiment():
                 data, labels = self.before_minibatch_eval(ctx, data, labels)
                 outputs = self._model(data)
                 self.after_minibatch_eval(ctx, outputs, labels)
-            self.after_eval(ctx)
+            return self.after_eval(ctx)
 
     def load_experiment(self):
         checkpoint = torch.load(self._experiment_file)
@@ -85,6 +94,15 @@ class OmExperiment():
         }
         self.before_save(save_dict)
         torch.save(save_dict, self._experiment_file)
+
+    def test(self, dataloader):
+        ctx = {}
+        self.before_test(ctx)
+        for _, data in enumerate(dataloader):
+            data = data.to(self._device)
+            outputs = self._model(data)
+            self.after_minibatch_test(ctx, outputs)
+        return self.after_test(ctx)
 
     def train(self, dataloader, epochs, validation_dataloader=None, start_epoch=None):
         start_epoch = start_epoch if start_epoch is not None else self._start_epoch
