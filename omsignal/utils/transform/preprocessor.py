@@ -105,7 +105,7 @@ class SignalSegmenter(object):
         return np.array(all_segments), np.array(all_ecg_ids)
 
 
-class LSTM_Segmenter():
+class LSTMSegmenter():
     def __init__(self, top_freq=3, max_hb=15, segment_size=110):
         self.segment_size = segment_size
         self.top_freq = top_freq
@@ -161,3 +161,37 @@ class LSTM_Segmenter():
 
         #listofheartb = [hearth_beat for hearth_beat in template for template in listofheartb]
         return heartb, ecg_ids
+
+
+def get_preprocessed_data(
+        train_data,
+        train_labels,
+        only_ids,
+        remap_label_transformer,
+        segmenter_cls=SignalSegmenter):
+
+    # run preprocessing
+    preprocessor = Preprocessor()
+    train_data = torch.tensor(train_data)
+    train_data = preprocessor(train_data)
+
+    # remap labels
+    train_labels = np.apply_along_axis(
+        remap_label_transformer, 1, train_labels)
+
+    # create segments
+    segmenter = segmenter_cls()
+    train_data, train_ids = segmenter(train_data)
+
+    # create a second level of label mapping
+    row_label_mapping_train = {i: j for i, j in enumerate(train_labels[:, -1])}
+
+    if only_ids is True:
+        train_labels = np.array([row_label_mapping_train[i]
+                                 for i in train_ids])
+    else:
+        train_labels = np.array([
+            np.hstack((train_labels[i][:-1], [row_label_mapping_train[i]])) for i in train_ids
+        ])
+
+    return train_data, train_labels, row_label_mapping_train
