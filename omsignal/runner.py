@@ -91,7 +91,7 @@ def run_lstm_exp():
         torch.LongTensor,
         remap,
         only_ids=True,
-        segmenter_cls=SignalSegmenter,
+        segmenter_cls=LSTMSegmenter,
         shuffle=False,
         batch_size=8
     )
@@ -131,7 +131,7 @@ def run_cnn_regression():
         torch.FloatTensor,
         remap,
         only_ids=False,
-        segmenter_cls=LSTMSegmenter,
+        segmenter_cls=SignalSegmenter,
         shuffle=True,
         batch_size=160
     )
@@ -175,7 +175,7 @@ def run_cnn_multi_task():
         torch.FloatTensor,
         remap,
         only_ids=False,
-        segmenter_cls=LSTMSegmenter,
+        segmenter_cls=SignalSegmenter,
         shuffle=True,
         batch_size=160
     )
