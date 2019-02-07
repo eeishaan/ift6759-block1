@@ -73,8 +73,9 @@ class Preprocessor(object):
 
 class SignalSegmenter(object):
 
-    def __init__(self, segment_size=110):
+    def __init__(self, segment_size=110, take_average=False):
         self.segment_size = segment_size
+        self.take_average = take_average
 
     @classmethod
     def detect_R_peak(cls, data, sada_wd_size=7, fs_wd_size=12, threshold=35):
@@ -164,6 +165,9 @@ class SignalSegmenter(object):
                 segments.append(new_heart_beat)
                 ecg_ids.append(recording)
 
+            if self.take_average is True:
+                segments = [np.mean(segments, axis=0)]
+                ecg_ids = [int(np.mean(ecg_ids))]
             all_segments.extend(segments)
             all_ecg_ids.extend(ecg_ids)
 

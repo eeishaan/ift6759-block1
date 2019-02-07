@@ -19,7 +19,7 @@ def task1():
     '''
     Pick three ids at random and plot their line graph
     '''
-    size=3
+    size = 3
 
     # fix seed for reproducability
     np.random.seed(1)
@@ -30,7 +30,7 @@ def task1():
     # separate out the labels and raw data
     train_vectors, train_labels = get_vector_and_labels(TRAIN_LABELED_FILE)
 
-    output_folder = RESULT_DIR / 'task1' 
+    output_folder = RESULT_DIR / 'task1'
 
     all_indices = np.arange(32)
     np.random.shuffle(all_indices)
@@ -39,7 +39,7 @@ def task1():
     random_indices = np.multiply(random_ids, random_window_indices)
     subset = np.take(train_vectors, random_indices, axis=0)
     label_subset = np.take(train_labels, random_indices, axis=0)
-    
+
     for i in range(size):
         plt.figure(i+1)
         plt.title("User ID: {}".format(int(label_subset[i][-1])))
