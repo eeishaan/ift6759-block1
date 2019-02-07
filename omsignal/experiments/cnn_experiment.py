@@ -258,7 +258,7 @@ class MultiTaskExperiment(OmExperiment):
             message += "Train ID acc: {} \n".format(label_acc)
             message += "Train Avg Kendall: {} \n".format(kendall_avg)
             message += "Train Combined: {} \n".format(combinedPerformanceScore)
-            print(message)
+            logger.info(message)
             val_loader = ctx.get('val_loader')
             if val_loader is not None:
                 self.eval(val_loader)
@@ -286,7 +286,7 @@ class MultiTaskExperiment(OmExperiment):
         message += "Eval Avg Kendall: {} \n".format(kendall_avg)
         message += "Eval Combined: {} \n".format(combinedPerformanceScore)
 
-        print(message)
+        logger.info(message)
 
     def compute_loss(self, ctx, outputs, labels):
         RR_std, TR_mean, PR_mean, id_preds = outputs
