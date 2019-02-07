@@ -48,7 +48,6 @@ class LSTMModel(nn.Module):
 
     def forward(self, inputs, hidden, batch_size):
         #LSTM
-        inputs = inputs.view(batch_size, inputs.shape[1], inputs.shape[2])
         inputs = self.noise(inputs)
         inputs, hidden = self.lstm(inputs, hidden)
 
