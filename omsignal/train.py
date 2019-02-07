@@ -39,9 +39,9 @@ def get_train_parser(parent=None):
     )
 
     parser.add_argument(
-        '--test-data',
+        '--validation-data',
         type=str,
-        help='Test data file location',
+        help='Validation data file location',
         default=VALIDATION_LABELED_FILE,
     )
 
@@ -168,10 +168,9 @@ def train_lstm_exp(
 
 
 def train_cnn_regression(
-    params,
-    train_file=TRAIN_LABELED_FILE,
-    validation_file=VALIDATION_LABELED_FILE
-):
+        params,
+        train_file=TRAIN_LABELED_FILE,
+        validation_file=VALIDATION_LABELED_FILE):
     '''
     Main function
     '''
@@ -218,7 +217,10 @@ def train_cnn_regression(
         validation_dataloader=valid_loader)
 
 
-def train_cnn_multi_task(train_file, validation_file, params):
+def train_cnn_multi_task(
+        params,
+        train_file=TRAIN_LABELED_FILE,
+        validation_file=VALIDATION_LABELED_FILE):
     '''
     Main function
     '''
@@ -297,7 +299,7 @@ def train(args):
         exit(1)
     with open(param_file) as fob:
         params = yaml.load(fob)
-    train_function(params, args.test_data, args.train_data)
+    train_function(params, args.train_data, args.validation_data)
 
 
 if __name__ == '__main__':
