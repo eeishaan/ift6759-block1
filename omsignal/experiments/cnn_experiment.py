@@ -232,7 +232,8 @@ class MultiTaskExperiment(OmExperiment):
             k_pr_mean = kendalltau(pr_mean, labels[:, 0])[0]
             k_tr_mean = kendalltau(tr_mean, labels[:, 1])[0]
             k_rr_std = kendalltau(rr_std, labels[:, 2])[0]
-            label_acc = recall_score(labels[:, 3], predicted_labels, average='macro')
+            label_acc = recall_score(
+                labels[:, 3], predicted_labels, average='macro')
             label_acc = (1 - ((1 - label_acc)/(1-1/32)))
             kendall_avg = np.mean([k_pr_mean, k_tr_mean, k_rr_std])
             combinedPerformanceScore = np.power(
@@ -268,7 +269,8 @@ class MultiTaskExperiment(OmExperiment):
         k_pr_mean = kendalltau(pr_mean, labels[:, 0])[0]
         k_tr_mean = kendalltau(tr_mean, labels[:, 1])[0]
         k_rr_std = kendalltau(rr_std, labels[:, 2])[0]
-        label_acc = recall_score(labels[:, 3], predicted_labels, average='macro')
+        label_acc = recall_score(
+            labels[:, 3], predicted_labels, average='macro')
         label_acc = (1 - ((1 - label_acc)/(1-1/32)))
         combinedPerformanceScore = np.power(
             k_rr_std * k_pr_mean * k_tr_mean * label_acc, 0.25)
@@ -277,9 +279,9 @@ class MultiTaskExperiment(OmExperiment):
         message = "Eval Kendall TR: {} \n".format(k_tr_mean)
         message += "Eval Kendall RR: {} \n".format(k_rr_std)
         message += "Eval Kendall PR: {} \n".format(k_pr_mean)
-        message += "Train ID acc: {} \n".format(label_acc)
-        message += "Train Avg Kendall: {} \n".format(kendall_avg)
-        message += "Train Combined: {} \n".format(combinedPerformanceScore)
+        message += "Eval ID acc: {} \n".format(label_acc)
+        message += "Eval Avg Kendall: {} \n".format(kendall_avg)
+        message += "Eval Combined: {} \n".format(combinedPerformanceScore)
 
         print(message)
 
