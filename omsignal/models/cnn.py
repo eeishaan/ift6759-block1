@@ -10,6 +10,7 @@ from omsignal.utils.transform.preprocessor import Preprocessor
 
 logger = logging.getLogger(__name__)
 
+
 class CNNClassifier(nn.Module):
     def __init__(self, n_filters=32, kernel_size=5, linear_dim=51):
         super(CNNClassifier, self).__init__()
