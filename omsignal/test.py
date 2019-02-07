@@ -6,7 +6,7 @@ import os
 import sys
 
 from omsignal.constants import DATA_ROOT_DIR, MODEL_DIR
-from omsignal.test import MODEL_EXP_MAP
+from omsignal.train import MODEL_EXP_MAP
 
 logger = logging.getLogger(__name__)
 
