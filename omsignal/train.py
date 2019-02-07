@@ -3,14 +3,16 @@ import argparse
 import os
 
 import torch
+import yaml
 
-from omsignal.constants import (MODEL_DIR, TRAIN_LABELED_FILE,
+from omsignal.constants import (MODEL_DIR, PARAM_DIR, TRAIN_LABELED_FILE,
                                 VALIDATION_LABELED_FILE)
 from omsignal.experiments.cnn_experiment import (MultiTaskExperiment,
                                                  RegressionNetEperiment,
                                                  SimpleNetExperiment)
 from omsignal.experiments.lstm_experiment import LSTMExperiment
 from omsignal.utils.loader import get_dataloader
+from omsignal.utils.misc import check_file
 from omsignal.utils.transform.basic import RemapLabels
 from omsignal.utils.transform.preprocessor import (LSTMSegmenter, Preprocessor,
                                                    SignalSegmenter,
@@ -40,14 +42,14 @@ def get_train_parser(parent=None):
         '--test-data',
         type=str,
         help='Test data file location',
-        required=True,
+        default=VALIDATION_LABELED_FILE,
     )
 
     parser.add_argument(
         '--train-data',
         type=str,
         help='Train data file location',
-        required=True,
+        default=TRAIN_LABELED_FILE,
     )
 
     parser.add_argument(
@@ -60,195 +62,245 @@ def get_train_parser(parent=None):
     return parser
 
 
-def train_cnn_classification():
+def train_cnn_classification(
+        params,
+        train_file=TRAIN_LABELED_FILE,
+        validation_file=VALIDATION_LABELED_FILE):
     '''
     Main function
     '''
-    os.makedirs(MODEL_DIR, exist_ok=True)
-    model_file = MODEL_DIR / "simple_net.pt"
+    model_file = params['model_file']
+    batch_size = params['batch_size']
+    optimiser_params = params['optimiser_params']
+    epochs = params['epochs']
+
+    model_dir = os.path.dirname(os.path.realpath(model_file))
+    os.makedirs(model_dir, exist_ok=True)
 
     # create id remap transformer
     remap = RemapLabels()
-
     # create dataloaders
     train_loader, row_label_mapping_train = get_dataloader(
-        TRAIN_LABELED_FILE,
+        train_file,
         torch.LongTensor,
         remap,
         only_ids=True,
         segmenter=SignalSegmenter(),
         shuffle=True,
-        batch_size=128
+        batch_size=batch_size
     )
     valid_loader, row_label_mapping_valid = get_dataloader(
-        VALIDATION_LABELED_FILE,
+        validation_file,
         torch.LongTensor,
         remap,
         only_ids=True,
         segmenter=SignalSegmenter(),
         shuffle=False,
-        batch_size=128
+        batch_size=batch_size
     )
 
     simplenet_exp = SimpleNetExperiment(
         model_file,
-        optimiser_params={
-            'lr': 0.1
-        },
+        optimiser_params=optimiser_params,
         device=device
     )
     print('started training')
     simplenet_exp.train(
         train_loader,
-        epochs=3000,
+        epochs=epochs,
         validation_dataloader=valid_loader)
 
 
-def train_lstm_exp():
+def train_lstm_exp(
+        params,
+        train_file=TRAIN_LABELED_FILE,
+        validation_file=VALIDATION_LABELED_FILE):
     """
     Main function
     """
-    os.makedirs(MODEL_DIR, exist_ok=True)
-    model_file = MODEL_DIR / "lstm.pt"
+    model_file = params['model_file']
+    batch_size = params['batch_size']
+    optimiser_params = params['optimiser_params']
+    model_params = params.get('model_params', {})
+    epochs = params['epochs']
+
+    model_dir = os.path.dirname(os.path.realpath(model_file))
+    os.makedirs(model_dir, exist_ok=True)
 
     # remap labels
     remap = RemapLabels()
 
     # create dataloaders
     train_loader, row_label_mapping_train = get_dataloader(
-        TRAIN_LABELED_FILE,
+        train_file,
         torch.LongTensor,
         remap,
         only_ids=True,
         segmenter=LSTMSegmenter(),
         shuffle=True,
-        batch_size=8
+        batch_size=batch_size
     )
     valid_loader, row_label_mapping_valid = get_dataloader(
-        VALIDATION_LABELED_FILE,
+        validation_file,
         torch.LongTensor,
         remap,
         only_ids=True,
         segmenter=LSTMSegmenter(),
         shuffle=False,
-        batch_size=8
+        batch_size=batch_size
     )
+
+    model_params.update({
+        'device': device
+    })
 
     lstm_exp = LSTMExperiment(
         model_file,
-        optimiser_params={
-            'lr': 0.0005,
-            'weight_decay': 0.0001
-        },
-        model_params={
-            'device': device,
-            'n_layers': 1,
-        },
+        optimiser_params=optimiser_params,
+        model_params=model_params,
         device=device
     )
     print('started training')
     lstm_exp.train(
         train_loader,
-        epochs=120,
+        epochs=epochs,
         validation_dataloader=valid_loader)
 
 
-def train_cnn_regression():
+def train_cnn_regression(
+    params,
+    train_file=TRAIN_LABELED_FILE,
+    validation_file=VALIDATION_LABELED_FILE
+):
     '''
     Main function
     '''
-    os.makedirs(MODEL_DIR, exist_ok=True)
-    model_file = MODEL_DIR / "regression_net.pt"
+    model_file = params['model_file']
+    batch_size = params['batch_size']
+    optimiser_params = params['optimiser_params']
+    epochs = params['epochs']
+
+    model_dir = os.path.dirname(os.path.realpath(model_file))
+    os.makedirs(model_dir, exist_ok=True)
 
     # remap labels
     remap = RemapLabels()
 
     # create dataloaders
     train_loader, row_label_mapping_train = get_dataloader(
-        TRAIN_LABELED_FILE,
+        train_file,
         torch.FloatTensor,
         remap,
         only_ids=False,
         segmenter=SignalSegmenter(),
         shuffle=True,
-        batch_size=160
+        batch_size=batch_size
     )
     valid_loader, row_label_mapping_valid = get_dataloader(
-        VALIDATION_LABELED_FILE,
+        validation_file,
         torch.FloatTensor,
         remap,
         only_ids=False,
         segmenter=SignalSegmenter(),
         shuffle=True,
-        batch_size=160
+        batch_size=batch_size
     )
 
     regnet_exp = RegressionNetEperiment(
         model_file,
-        optimiser_params={
-            'lr': 0.01
-        },
+        optimiser_params=optimiser_params,
         device=device
     )
     print('started training')
     regnet_exp.train(
         train_loader,
-        epochs=4000,
+        epochs=epochs,
         validation_dataloader=valid_loader)
 
 
-def train_cnn_multi_task():
+def train_cnn_multi_task(train_file, validation_file, params):
     '''
     Main function
     '''
-    os.makedirs(MODEL_DIR, exist_ok=True)
-    model_file = MODEL_DIR / "multi_task_net.pt"
+    model_file = params['model_file']
+    batch_size = params['batch_size']
+    optimiser_params = params['optimiser_params']
+    epochs = params['epochs']
+
+    model_dir = os.path.dirname(os.path.realpath(model_file))
+    os.makedirs(model_dir, exist_ok=True)
 
     # remap labels
     remap = RemapLabels()
 
     # create dataloaders
     train_loader, row_label_mapping_train = get_dataloader(
-        TRAIN_LABELED_FILE,
+        train_file,
         torch.FloatTensor,
         remap,
         only_ids=False,
         segmenter=SignalSegmenter(),
         shuffle=True,
-        batch_size=160
+        batch_size=batch_size
     )
     valid_loader, row_label_mapping_valid = get_dataloader(
-        VALIDATION_LABELED_FILE,
+        validation_file,
         torch.FloatTensor,
         remap,
         only_ids=False,
         segmenter=SignalSegmenter(),
         shuffle=True,
-        batch_size=160
+        batch_size=batch_size
     )
 
     regnet_exp = MultiTaskExperiment(
         model_file,
-        optimiser_params={
-            'lr': 0.01
-        },
+        optimiser_params=optimiser_params,
         device=device
     )
     print('started training')
     regnet_exp.train(
         train_loader,
-        epochs=4000,
+        epochs=epochs,
         validation_dataloader=valid_loader)
 
 
 # need to define below function definitions
 MODEL_EXP_MAP = {
-    'cnn_classification': train_cnn_classification,
-    'cnn_regression': train_cnn_regression,
-    'cnn_multi_task': train_cnn_multi_task,
-    'best_model': train_cnn_multi_task,
+    'cnn_classification': {
+        'train_func': train_cnn_classification,
+        'param_file': PARAM_DIR / 'cnn_classification.yml',
+    },
+    'cnn_regression': {
+        'train_func': train_cnn_regression,
+        'param_file': PARAM_DIR / 'cnn_regression.yml',
+    },
+    'cnn_multi_task': {
+        'train_func': train_cnn_multi_task,
+        'param_file': PARAM_DIR / 'cnn_multi_task.yml',
+    },
+    'best_model': {
+        'train_func': train_cnn_multi_task,
+        'param_file': PARAM_DIR / 'cnn_multi_task.yml',
+    },
 }
+
+
+def train(args):
+    train_function = MODEL_EXP_MAP[args.model]['train_func']
+    param_file = MODEL_EXP_MAP[args.model]['param_file']
+
+    if args.params is not None:
+        param_file = args.params
+        param_file = check_file(param_file, PARAM_DIR)
+    if param_file is None:
+        exit(1)
+    with open(param_file) as fob:
+        params = yaml.load(fob)
+    train_function(params, args.test_data, args.train_data)
+
 
 if __name__ == '__main__':
     parser = get_train_parser()
     args = parser.parse_args()
+    train(args)
