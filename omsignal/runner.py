@@ -147,8 +147,6 @@ def run_regression_exp():
     os.makedirs(MODEL_DIR, exist_ok=True)
     model_file = MODEL_DIR / "regression_net.pt"
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
     # load data
     train_data, train_labels = get_vector_and_labels(TRAIN_LABELED_FILE)
     valid_data, valid_labels = get_vector_and_labels(VALIDATION_LABELED_FILE)
@@ -215,8 +213,6 @@ def run_multi_task_exp():
     '''
     os.makedirs(MODEL_DIR, exist_ok=True)
     model_file = MODEL_DIR / "multi_task_net.pt"
-
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     # load data
     train_data, train_labels = get_vector_and_labels(TRAIN_LABELED_FILE)
