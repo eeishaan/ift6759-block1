@@ -176,21 +176,23 @@ def get_preprocessed_data(
     data = preprocessor(data)
 
     # remap labels
-    labels = np.apply_along_axis(
-        remap_label_transformer, 1, labels)
+    if labels:
+        labels = np.apply_along_axis(
+            remap_label_transformer, 1, labels)
 
     # create segments
     data, train_ids = segmenter(data)
 
     # create a second level of label mapping
-    row_label_mapping_train = {i: j for i, j in enumerate(labels[:, -1])}
-
-    if only_ids is True:
-        labels = np.array([row_label_mapping_train[i]
-                           for i in train_ids])
-    else:
-        labels = np.array([
-            np.hstack((labels[i][:-1], [row_label_mapping_train[i]])) for i in train_ids
-        ])
-
-    return data, labels, row_label_mapping_train
+    if labels:
+        row_label_mapping_train = {i: j for i, j in enumerate(labels[:, -1])}
+        if only_ids is True:
+            labels = np.array([row_label_mapping_train[i]
+                               for i in train_ids])
+        else:
+            labels = np.array([
+                np.hstack((labels[i][:-1], [row_label_mapping_train[i]]))
+                for i in train_ids
+            ])
+        return data, labels, row_label_mapping_train
+    return data, train_ids
