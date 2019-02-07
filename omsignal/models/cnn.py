@@ -276,9 +276,9 @@ class RegressionNet(nn.Module):
         return xRR_std, xTR_mean, xPR_mean
 
 
-class MultiTaskModel(RegressionNet):
+class MultiTaskNet(RegressionNet):
     def __init__(self):
-        super(MultiTaskModel, self).__init__()
+        super(MultiTaskNet, self).__init__()
         self.fc1_label = nn.Linear(60, 50)
         self.drop_lin_label = nn.Dropout(p=0.5)
         self.fc2_label = nn.Linear(50, 32)
