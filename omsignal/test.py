@@ -39,7 +39,7 @@ def get_test_parser(parent=None):
     return parser
 
 
-def run_eval(args):
+def test(args):
     data_file = args.data_file
     model_file = args.model_file
     model_file = check_file(model_file, MODEL_DIR)
@@ -54,4 +54,4 @@ def run_eval(args):
 if __name__ == '__main__':
     parser = get_test_parser()
     args = parser.parse_args()
-    run_eval(args)
+    test(args)
