@@ -18,13 +18,6 @@ from omsignal.utils.transform.preprocessor import (LSTMSegmenter, Preprocessor,
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-MODEL_EXP_MAP = {
-    'cnn_classification': train_cnn_classification,
-    'cnn_regression': train_cnn_regression,
-    'cnn_multi_task': train_cnn_multi_task,
-    'best_model': train_cnn_multi_task,
-}
-
 
 def get_train_parser(parent=None):
     '''
@@ -247,6 +240,14 @@ def train_cnn_multi_task():
         epochs=4000,
         validation_dataloader=valid_loader)
 
+
+# need to define below function definitions
+MODEL_EXP_MAP = {
+    'cnn_classification': train_cnn_classification,
+    'cnn_regression': train_cnn_regression,
+    'cnn_multi_task': train_cnn_multi_task,
+    'best_model': train_cnn_multi_task,
+}
 
 if __name__ == '__main__':
     parser = get_train_parser()
