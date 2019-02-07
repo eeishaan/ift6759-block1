@@ -103,23 +103,6 @@ class LSTMExperiment(OmExperiment):
         plt.ylabel('True')
         plt.savefig(CURR_DIR + '/graphs/confusion')
 
-        x = range(1,num_epoch+1)
-        plt.figure()
-        plt.plot(x, err_train,"sk-", label="Trainset")
-        plt.plot(x, err_test,"sr-", label="Testset")
-        plt.xlabel("Epoch")
-        plt.ylabel("Error")
-        plt.legend(fontsize=10)
-        for i in range(32):
-            if class_total[i]!=0:
-                print('Accuracy of %5s : %2d %%' % (
-                    i, 100 * class_correct[i]/class_total[i]))
-            else:
-                print('Accuracy of %5s : %2d %%' % (
-                    i, 100 * class_correct[i]))
-        plt.savefig(CURR_DIR + '/graphs/error')
-
-
     def train(self, dataloader, epochs, validation_dataloader=None, start_epoch=None):
         start_epoch = start_epoch if start_epoch is not None else self._start_epoch
         for epoch in range(start_epoch, epochs):
@@ -133,7 +116,6 @@ class LSTMExperiment(OmExperiment):
                 self._model.train()
                 data, labels = data.to(self._device), labels.to(self._device)
                 data, labels = self.before_forwardp(ctx, data, labels)
-                lrd = lr * (1./(1+5 * epoch/epochs))
                 self._optimiser()
                 self._model.zero_grad()
                 hidden = self._model.init_hidden(data.shape(0))
