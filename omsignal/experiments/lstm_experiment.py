@@ -101,7 +101,7 @@ class LSTMExperiment(OmExperiment):
         plt.colorbar()
         plt.xlabel('Predicted')
         plt.ylabel('True')
-        plt.savefig(CURRENT_DIR + '/graphs/confusion')
+        plt.savefig(CURR_DIR + '/graphs/confusion')
 
         x = range(1,num_epoch+1)
         plt.figure()
@@ -117,7 +117,7 @@ class LSTMExperiment(OmExperiment):
             else:
                 print('Accuracy of %5s : %2d %%' % (
                     i, 100 * class_correct[i]))
-        plt.savefig(CURRENT_DIR + '/graphs/error')
+        plt.savefig(CURR_DIR + '/graphs/error')
 
 
     def train(self, dataloader, epochs, validation_dataloader=None, start_epoch=None):
