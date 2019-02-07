@@ -1,5 +1,5 @@
 model_file: cnn_multi_task.pt
 batch_size: 160
-optimizer_params:
+optimiser_params:
   lr: 0.01
 epochs: 4000
