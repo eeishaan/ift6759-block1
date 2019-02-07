@@ -1,7 +1,7 @@
 import logging
 from logging.config import fileConfig
 
-from omsignal.constants import CURR_DIR
+from omsignal.constants import LOG_FILE_INI
 
 # setup logging configuration
-fileConfig(CURR_DIR/'logging_config.ini')
+fileConfig(LOG_FILE_INI)
