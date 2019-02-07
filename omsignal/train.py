@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 import argparse
-from omsignal.runner import run_cnn_classification, run_cnn_multi_task, run_cnn_regression
 
+from omsignal.runner import (run_cnn_classification, run_cnn_multi_task,
+                             run_cnn_regression)
 
-def get_model_experminent_mapping():
-    return {
-        'cnn_classification': run_cnn_classification,
-        'cnn_regression': run_cnn_regression,
-        'cnn_multi_task': run_cnn_multi_task,
-    }
+MODEL_EXP_MAP = {
+    'cnn_classification': run_cnn_classification,
+    'cnn_regression': run_cnn_regression,
+    'cnn_multi_task': run_cnn_multi_task,
+    'best_model': run_cnn_multi_task,
+}
 
 
 def get_train_parser(parent=None):
@@ -24,7 +25,7 @@ def get_train_parser(parent=None):
         '--model',
         type=str,
         help='Model type to train',
-        choices=get_model_experminent_mapping().keys(),
+        choices=MODEL_EXP_MAP.keys(),
         required=True,
     )
 
