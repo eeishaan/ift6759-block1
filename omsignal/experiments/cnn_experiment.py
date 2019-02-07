@@ -1,4 +1,5 @@
 #!/usr/bin/evn python3
+import logging
 
 import numpy as np
 import torch
@@ -10,6 +11,8 @@ from torch.optim import SGD, Adam
 from omsignal.experiments import OmExperiment
 from omsignal.models.cnn import RegressionNet, SimpleNet
 from omsignal.utils.transform.basic import ClipAndFlatten
+
+logger = logging.getLogger(__name__)
 
 
 class SimpleNetExperiment(OmExperiment):
@@ -46,7 +49,7 @@ class SimpleNetExperiment(OmExperiment):
         acc = (1 - ((1 - acc)/(1-1/32)))
         message = "Epoch: {} Train loss: {} accuracy: {}".format(
             epoch, ctx['running_loss'].item(), acc)
-        print(message)
+        logger.info(message)
         val_loader = ctx.get('val_loader')
         if val_loader is not None:
             self.eval(val_loader)
@@ -62,7 +65,7 @@ class SimpleNetExperiment(OmExperiment):
                            ctx['predicted'], average='macro')
         acc = (1 - ((1 - acc)/(1-1/32)))
         message = "Eval accuracy: {}".format(acc)
-        print(message)
+        logger.info(message)
 
 
 class RegressionNetEperiment(OmExperiment):
@@ -135,7 +138,7 @@ class RegressionNetEperiment(OmExperiment):
             message += "Train Kendall RR: {} \n".format(k_rr_std)
             message += "Train Kendall PR: {} \n".format(k_pr_mean)
             message += "Train Avg Kendall: {} \n".format(kendall_avg)
-            print(message)
+            logger.info(message)
             val_loader = ctx.get('val_loader')
             if val_loader is not None:
                 self.eval(val_loader)
@@ -155,7 +158,7 @@ class RegressionNetEperiment(OmExperiment):
         message += "Eval Kendall PR: {} \n".format(k_pr_mean)
         message += "Eval Avg Kendall: {} \n".format(kendall_avg)
 
-        print(message)
+        logger.info(message)
 
     def compute_loss(self, ctx, outputs, labels):
         RR_std, TR_mean, PR_mean = outputs
