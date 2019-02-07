@@ -40,24 +40,24 @@ def get_dataloader(
         shuffle,
         batch_size):
     # load data
-    train_data, train_labels = get_vector_and_labels(data_file_path)
+    data, labels = get_vector_and_labels(data_file_path)
 
     # get_preprocess_data
-    train_data, train_labels, row_id_map = get_preprocessed_data(
-        train_data,
-        train_labels,
+    data, labels, row_id_map = get_preprocessed_data(
+        data,
+        labels,
         only_ids,
         remap_transform,
         segmenter_cls
     )
 
     # make dataloader
-    train_data = torch.Tensor(train_data)
-    train_labels = label_type(train_labels)
-    train_dataset = torch.utils.data.TensorDataset(train_data, train_labels)
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=shuffle)
-    return train_loader, row_id_map
+    data = torch.Tensor(data)
+    labels = label_type(labels)
+    dataset = torch.utils.data.TensorDataset(data, labels)
+    loader = torch.utils.data.DataLoader(
+        dataset, batch_size=batch_size, shuffle=shuffle)
+    return loader, row_id_map
 
 
 def get_vector_and_labels(file_path: str) -> tuple:

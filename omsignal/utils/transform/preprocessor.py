@@ -164,34 +164,34 @@ class LSTMSegmenter():
 
 
 def get_preprocessed_data(
-        train_data,
-        train_labels,
+        data,
+        labels,
         only_ids,
         remap_label_transformer,
         segmenter_cls=SignalSegmenter):
 
     # run preprocessing
     preprocessor = Preprocessor()
-    train_data = torch.tensor(train_data)
-    train_data = preprocessor(train_data)
+    data = torch.tensor(data)
+    data = preprocessor(data)
 
     # remap labels
-    train_labels = np.apply_along_axis(
-        remap_label_transformer, 1, train_labels)
+    labels = np.apply_along_axis(
+        remap_label_transformer, 1, labels)
 
     # create segments
     segmenter = segmenter_cls()
-    train_data, train_ids = segmenter(train_data)
+    data, train_ids = segmenter(data)
 
     # create a second level of label mapping
-    row_label_mapping_train = {i: j for i, j in enumerate(train_labels[:, -1])}
+    row_label_mapping_train = {i: j for i, j in enumerate(labels[:, -1])}
 
     if only_ids is True:
-        train_labels = np.array([row_label_mapping_train[i]
-                                 for i in train_ids])
+        labels = np.array([row_label_mapping_train[i]
+                           for i in train_ids])
     else:
-        train_labels = np.array([
-            np.hstack((train_labels[i][:-1], [row_label_mapping_train[i]])) for i in train_ids
+        labels = np.array([
+            np.hstack((labels[i][:-1], [row_label_mapping_train[i]])) for i in train_ids
         ])
 
-    return train_data, train_labels, row_label_mapping_train
+    return data, labels, row_label_mapping_train
