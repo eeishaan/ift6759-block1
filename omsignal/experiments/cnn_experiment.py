@@ -9,7 +9,7 @@ from torch.nn import MSELoss, NLLLoss
 from torch.optim import SGD, Adam
 
 from omsignal.experiments import OmExperiment
-from omsignal.models.cnn import RegressionNet, SimpleNet
+from omsignal.models.cnn import MultiTaskNet, RegressionNet, SimpleNet
 from omsignal.utils.transform.basic import ClipAndFlatten
 
 logger = logging.getLogger(__name__)
@@ -175,7 +175,7 @@ class RegressionNetEperiment(OmExperiment):
 class MultiTaskExperiment(OmExperiment):
     def __init__(self,
                  exp_file,
-                 device, model=MultiTaskModel,
+                 device, model=MultiTaskNet,
                  model_params={},
                  optimiser=Adam,
                  optimiser_params={},
@@ -239,7 +239,7 @@ class MultiTaskExperiment(OmExperiment):
                 labels[:, 3], predicted_labels, average='macro')
             label_acc = (1 - ((1 - label_acc)/(1-1/32)))
             kendall_avg = np.mean([k_pr_mean, k_tr_mean, k_rr_std])
-            combinedPerformanceScore = np.power(
+            combined_score = np.power(
                 k_rr_std * k_pr_mean * k_tr_mean * label_acc, 0.25)
 
             message = "Epoch : {} Train Loss: {} \n"\
@@ -257,7 +257,7 @@ class MultiTaskExperiment(OmExperiment):
             message += "Train Kendall PR: {} \n".format(k_pr_mean)
             message += "Train ID acc: {} \n".format(label_acc)
             message += "Train Avg Kendall: {} \n".format(kendall_avg)
-            message += "Train Combined: {} \n".format(combinedPerformanceScore)
+            message += "Train Combined: {} \n".format(combined_score)
             logger.info(message)
             val_loader = ctx.get('val_loader')
             if val_loader is not None:
@@ -275,7 +275,7 @@ class MultiTaskExperiment(OmExperiment):
         label_acc = recall_score(
             labels[:, 3], predicted_labels, average='macro')
         label_acc = (1 - ((1 - label_acc)/(1-1/32)))
-        combinedPerformanceScore = np.power(
+        combined_score = np.power(
             k_rr_std * k_pr_mean * k_tr_mean * label_acc, 0.25)
         kendall_avg = np.mean([k_pr_mean, k_tr_mean, k_rr_std])
 
@@ -284,7 +284,7 @@ class MultiTaskExperiment(OmExperiment):
         message += "Eval Kendall PR: {} \n".format(k_pr_mean)
         message += "Eval ID acc: {} \n".format(label_acc)
         message += "Eval Avg Kendall: {} \n".format(kendall_avg)
-        message += "Eval Combined: {} \n".format(combinedPerformanceScore)
+        message += "Eval Combined: {} \n".format(combined_score)
 
         logger.info(message)
 
