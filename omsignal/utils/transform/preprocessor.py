@@ -168,7 +168,7 @@ def get_preprocessed_data(
         labels,
         only_ids,
         remap_label_transformer,
-        segmenter_cls=SignalSegmenter):
+        segmenter):
 
     # run preprocessing
     preprocessor = Preprocessor()
@@ -180,7 +180,6 @@ def get_preprocessed_data(
         remap_label_transformer, 1, labels)
 
     # create segments
-    segmenter = segmenter_cls()
     data, train_ids = segmenter(data)
 
     # create a second level of label mapping

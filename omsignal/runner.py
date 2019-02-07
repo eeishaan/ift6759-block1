@@ -38,7 +38,7 @@ def run_cnn_classification():
         torch.LongTensor,
         remap,
         only_ids=True,
-        segmenter_cls=SignalSegmenter,
+        segmenter=SignalSegmenter(),
         shuffle=True,
         batch_size=128
     )
@@ -47,7 +47,7 @@ def run_cnn_classification():
         torch.LongTensor,
         remap,
         only_ids=True,
-        segmenter_cls=SignalSegmenter,
+        segmenter=SignalSegmenter(),
         shuffle=False,
         batch_size=128
     )
@@ -82,7 +82,7 @@ def run_lstm_exp():
         torch.LongTensor,
         remap,
         only_ids=True,
-        segmenter_cls=LSTMSegmenter,
+        segmenter=LSTMSegmenter(),
         shuffle=True,
         batch_size=8
     )
@@ -91,7 +91,7 @@ def run_lstm_exp():
         torch.LongTensor,
         remap,
         only_ids=True,
-        segmenter_cls=LSTMSegmenter,
+        segmenter=LSTMSegmenter(),
         shuffle=False,
         batch_size=8
     )
@@ -131,7 +131,7 @@ def run_cnn_regression():
         torch.FloatTensor,
         remap,
         only_ids=False,
-        segmenter_cls=SignalSegmenter,
+        segmenter=SignalSegmenter(),
         shuffle=True,
         batch_size=160
     )
@@ -140,7 +140,7 @@ def run_cnn_regression():
         torch.FloatTensor,
         remap,
         only_ids=False,
-        segmenter_cls=SignalSegmenter,
+        segmenter=SignalSegmenter(),
         shuffle=True,
         batch_size=160
     )
@@ -175,7 +175,7 @@ def run_cnn_multi_task():
         torch.FloatTensor,
         remap,
         only_ids=False,
-        segmenter_cls=SignalSegmenter,
+        segmenter=SignalSegmenter(),
         shuffle=True,
         batch_size=160
     )
@@ -184,7 +184,7 @@ def run_cnn_multi_task():
         torch.FloatTensor,
         remap,
         only_ids=False,
-        segmenter_cls=SignalSegmenter,
+        segmenter=SignalSegmenter(),
         shuffle=True,
         batch_size=160
     )

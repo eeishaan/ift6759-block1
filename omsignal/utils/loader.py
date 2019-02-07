@@ -36,7 +36,7 @@ def get_dataloader(
         label_type,
         remap_transform,
         only_ids,
-        segmenter_cls,
+        segmenter,
         shuffle,
         batch_size):
     # load data
@@ -48,7 +48,7 @@ def get_dataloader(
         labels,
         only_ids,
         remap_transform,
-        segmenter_cls
+        segmenter
     )
 
     # make dataloader
