@@ -67,7 +67,8 @@ def get_test_dataloader(test_data_file, segmenter, batch_size=160):
     if test_data_file is None:
         return
     # load test data
-    test_data, _ = get_vector_and_labels(test_data_file)
+    test_data = read_memfile(
+        test_data_file, shape=(160, 3750), dtype='float32')
 
     # pre-process
     test_data, row_mapping = get_preprocessed_data(
