@@ -8,12 +8,13 @@ import sys
 import numpy as np
 import yaml
 
-from omsignal.constants import DATA_ROOT_DIR, MODEL_DIR, PARAM_DIR
+from omsignal.constants import DATA_ROOT_DIR, ID_MAPPING, MODEL_DIR, PARAM_DIR
 from omsignal.experiments.cnn_experiment import (MultiTaskExperiment,
                                                  RegressionNetEperiment,
                                                  SimpleNetExperiment)
 from omsignal.utils.loader import get_test_dataloader
 from omsignal.utils.misc import check_file
+from omsignal.utils.transform.basic import ReverseLabelMap
 from omsignal.utils.transform.preprocessor import SignalSegmenter
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -54,6 +55,7 @@ def test_cnn_classification(model_file, test_data_file):
     if test_loader is None:
         exit(1)
 
+    rev_id_mapper = ReverseLabelMap(ID_MAPPING)
     exp_cls = SimpleNetExperiment(
         model_file,
         device=device,
@@ -66,6 +68,7 @@ def test_cnn_classification(model_file, test_data_file):
         index_of_int = row_mapping == i
         counts = np.bincount(preds[index_of_int].astype(int))
         y_pred_majority = np.append(y_pred_majority, np.argmax(counts))
+    y_pred_majority = np.apply_along_axis(rev_id_mapper, 0, y_pred_majority)
     return y_pred_majority
 
 
@@ -91,12 +94,14 @@ def test_cnn_multi_task(model_file, test_data_file):
     if test_loader is None:
         exit(1)
 
+    rev_id_mapper = ReverseLabelMap(ID_MAPPING)
     exp_cls = RegressionNetEperiment(
         model_file,
         device=device,
     )
     exp_cls.load_experiment()
     preds = exp_cls.test(test_loader)
+    preds[:, -1] = np.apply_along_axis(rev_id_mapper, 0, preds[:, -1])
     return preds
 
 
