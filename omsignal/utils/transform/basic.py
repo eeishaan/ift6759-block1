@@ -12,7 +12,13 @@ from omsignal.utils.transform import OmTransform
 
 class ClipAndFlatten(OmTransform):
     '''
-    Remove unnecessary rows and flatten across batches
+    Remove unnecessary rows and flatten across batches.
+    This is useful when segmentation is used as a transformer.
+    As the number of rows is not fixed, the segmenter sends a tensor
+    of shape (200, segment size). Not all the rows are relevant.
+    Rows which have label -1 are irrelevant. This transformer
+    removes irrelevant rows and construct a flattened batch.
+    It also preserves the boundary information.
     '''
 
     def __init__(self, segment_size, label_size=4):
@@ -51,7 +57,7 @@ class LabelSeparator(OmTransform):
 
 class RemapLabels(OmTransform):
     '''
-    Remap labels to a continuous interval
+    Remap ids to a continuous interval
     '''
 
     def __init__(self, file_path):
@@ -77,6 +83,10 @@ class RemapLabels(OmTransform):
 
 
 class ReverseLabelMap(OmTransform):
+    '''
+    Transformer to remap ids to true ids
+    '''
+
     def __init__(self, file_path):
         self.file_path = file_path
         with open(file_path, 'r') as fob:
