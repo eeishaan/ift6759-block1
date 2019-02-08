@@ -301,6 +301,7 @@ def train_deterministic(
 
     det_exp = DeterministicExp(model_file)
     det_exp.train(train_data, train_labels, valid_data, valid_labels)
+    det_exp.save_experiment()
     remap.save()
 
 
