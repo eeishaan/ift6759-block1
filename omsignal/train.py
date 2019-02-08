@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import yaml
 
-from omsignal.constants import (ID_MAPPING, MODEL_DIR, PARAM_DIR,
+from omsignal.constants import (GRAPH_DIR, ID_MAPPING, MODEL_DIR, PARAM_DIR,
                                 TRAIN_LABELED_FILE, VALIDATION_LABELED_FILE)
 from omsignal.experiments.cnn_experiment import (MultiTaskExperiment,
                                                  RegressionNetEperiment,
@@ -20,6 +20,7 @@ from omsignal.utils.transform.basic import RemapLabels
 from omsignal.utils.transform.preprocessor import (LSTMSegmenter, Preprocessor,
                                                    SignalSegmenter,
                                                    get_preprocessed_data)
+from omsignal.utils.vis import plot_confusion_matrix
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ def get_train_parser(parent=None):
     if parent is None:
         parser = argparse.ArgumentParser()
     else:
-        parser = parent.add_parser('train', help='Test pre-trained models')
+        parser = parent.add_parser('train', help='Train models')
 
     parser.add_argument(
         '--model',
@@ -303,9 +304,11 @@ def train_deterministic(
 
     det_exp = DeterministicExp(model_file)
     det_exp.train(train_data, train_labels, valid_data, valid_labels)
+    pred = det_exp.test(valid_data)
+    plot_confusion_matrix(
+        GRAPH_DIR / 'deterministic_valid.png', valid_labels[:, -1], pred[:, -1])
     det_exp.save_experiment()
     remap.save()
-
 
     # need to define below function definitions
 MODEL_EXP_MAP = {
