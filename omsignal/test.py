@@ -13,10 +13,12 @@ from omsignal.constants import DATA_ROOT_DIR, ID_MAPPING, MODEL_DIR, PARAM_DIR
 from omsignal.experiments.cnn_experiment import (MultiTaskExperiment,
                                                  RegressionNetEperiment,
                                                  SimpleNetExperiment)
+from omsignal.experiments.deterministic import DeterministicExp
 from omsignal.utils.loader import get_test_dataloader
+from omsignal.utils.memfile import read_memfile
 from omsignal.utils.misc import check_file
 from omsignal.utils.transform.basic import ReverseLabelMap
-from omsignal.utils.transform.preprocessor import SignalSegmenter
+from omsignal.utils.transform.preprocessor import Preprocessor, SignalSegmenter
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -107,6 +109,20 @@ def test_cnn_multi_task(model_file, test_data_file):
     return preds
 
 
+def test_deterministic(model_file, test_data_file):
+    test_data = read_memfile(
+        test_data_file, shape=(160, 3750), dtype='float32')
+    preprocessor = Preprocessor()
+    test_data = torch.tensor(test_data)
+    test_data = preprocessor(test_data).numpy()
+
+    rev_id_mapper = ReverseLabelMap(ID_MAPPING)
+    exp_cls = DeterministicExp.load_experiment(model_file)
+    preds = exp_cls.test(test_data)
+    preds[:, -1] = np.array([rev_id_mapper(p) for p in preds[:, -1]])
+    return preds
+
+
 MODEL_EXP_MAP = {
     'cnn_classification': {
         'test_func': test_cnn_classification,
@@ -120,9 +136,13 @@ MODEL_EXP_MAP = {
         'test_func': test_cnn_multi_task,
         'param_file': PARAM_DIR / 'cnn_multi_task.yml',
     },
+    'deterministic_task': {
+        'train_func': test_deterministic,
+        'param_file': PARAM_DIR / 'deterministic.yml',
+    },
     'best_model': {
-        'test_func': test_cnn_multi_task,
-        'param_file': PARAM_DIR / 'cnn_multi_task.yml',
+        'test_func': test_deterministic,
+        'param_file': PARAM_DIR / 'deterministic.yml',
     },
 }
 
