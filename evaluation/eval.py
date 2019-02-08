@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # Put your group name here
     group_name = "b1pomt2"
 
-    model_filename = None
+    model_filename = '/rap/jvb-000-aa/COURS2019/etudiants/submissions/b1pomt2/model/deterministic.pkl'
     # model_filename should be the absolute path on shared disk to your
     # best model. You need to ensure that they are available to evaluators on
     # Helios.
@@ -82,10 +82,10 @@ if __name__ == "__main__":
     y_pred = eval_model(dataset_file, model_filename)
 
     assert type(y_pred) is np.ndarray, "Return a numpy array of dim=1"
-    assert len(y_pred.shape) == 1, "Make sure ndim=1 for y_pred"
+    assert len(y_pred.shape) == 2, "Make sure ndim=1 for y_pred"
 
     results_fname = Path(results_dir) / (group_name + '_eval_pred.txt')
 
     print('\nSaving results to ', results_fname.absolute())
-    write_memfile(results_fname, y_pred)
+    write_memfile(y_pred, results_fname)
     #########################################
