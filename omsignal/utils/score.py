@@ -7,7 +7,6 @@ import numpy as np
 
 
 def get_combined_score(pr_mean, tr_mean, rr_std, pred_ids, labels):
-
     k_pr_mean = kendalltau(pr_mean, labels[:, 0])[0]
     k_tr_mean = kendalltau(tr_mean, labels[:, 1])[0]
     k_rr_std = kendalltau(rr_std, labels[:, 2])[0]
