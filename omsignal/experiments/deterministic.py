@@ -33,7 +33,7 @@ class DeterministicExp(object):
 
     @classmethod
     def load_experiment(cls, file_name):
-        obj = DeterministicExp(file_name)
+        obj = cls(file_name)
         with open(file_name, 'rb') as fob:
             save_dict = pickle.load(fob)
         obj.ipca = save_dict['ipca']
