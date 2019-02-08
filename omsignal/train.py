@@ -2,6 +2,7 @@
 import argparse
 import os
 
+import numpy as np
 import torch
 import yaml
 
@@ -10,8 +11,9 @@ from omsignal.constants import (ID_MAPPING, MODEL_DIR, PARAM_DIR,
 from omsignal.experiments.cnn_experiment import (MultiTaskExperiment,
                                                  RegressionNetEperiment,
                                                  SimpleNetExperiment)
+from omsignal.experiments.deterministic import DeterministicExp
 from omsignal.experiments.lstm_experiment import LSTMExperiment
-from omsignal.utils.loader import get_dataloader
+from omsignal.utils.loader import get_dataloader, get_vector_and_labels
 from omsignal.utils.misc import check_file
 from omsignal.utils.transform.basic import RemapLabels
 from omsignal.utils.transform.preprocessor import (LSTMSegmenter, Preprocessor,
@@ -258,20 +260,51 @@ def train_cnn_multi_task(
         batch_size=batch_size
     )
 
-    regnet_exp = MultiTaskExperiment(
+    multi_task_exp = MultiTaskExperiment(
         model_file,
         optimiser_params=optimiser_params,
         device=device
     )
     print('started training')
-    regnet_exp.train(
+    multi_task_exp.train(
         train_loader,
         epochs=epochs,
         validation_dataloader=valid_loader)
     remap.save()
 
 
-# need to define below function definitions
+def train_deterministic(
+        params,
+        train_file=TRAIN_LABELED_FILE,
+        validation_file=VALIDATION_LABELED_FILE):
+    model_file = MODEL_DIR / params['model_file']
+    model_dir = os.path.dirname(os.path.realpath(model_file))
+    os.makedirs(model_dir, exist_ok=True)
+
+    train_data, train_labels = get_vector_and_labels(train_file)
+    valid_data, valid_labels = get_vector_and_labels(validation_file)
+
+    # remap transform
+    remap = RemapLabels(ID_MAPPING)
+
+    preprocessor = Preprocessor()
+    train_data = torch.tensor(train_data)
+    train_data = preprocessor(train_data).numpy()
+    valid_data = torch.tensor(valid_data)
+    valid_data = preprocessor(valid_data).numpy()
+
+    # remap labels
+    train_labels = np.apply_along_axis(
+        remap, 1, train_labels)
+    valid_labels = np.apply_along_axis(
+        remap, 1, valid_labels)
+
+    det_exp = DeterministicExp(model_file)
+    det_exp.train(train_data, train_labels, valid_data, valid_labels)
+    remap.save()
+
+
+    # need to define below function definitions
 MODEL_EXP_MAP = {
     'cnn_classification': {
         'train_func': train_cnn_classification,
@@ -285,9 +318,13 @@ MODEL_EXP_MAP = {
         'train_func': train_cnn_multi_task,
         'param_file': PARAM_DIR / 'cnn_multi_task.yml',
     },
+    'deterministic_task': {
+        'train_func': train_deterministic,
+        'param_file': PARAM_DIR / 'deterministic.yml',
+    },
     'best_model': {
-        'train_func': train_cnn_multi_task,
-        'param_file': PARAM_DIR / 'cnn_multi_task.yml',
+        'train_func': train_deterministic,
+        'param_file': PARAM_DIR / 'deterministic.yml',
     },
 }
 
