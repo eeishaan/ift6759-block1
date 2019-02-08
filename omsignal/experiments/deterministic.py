@@ -75,7 +75,6 @@ class DeterministicExp(object):
         # take average segments
         segmenter = SignalSegmenter(take_average=True)
         train_data, _ = segmenter(train_data)
-        valid_data, _ = segmenter(valid_data)
 
         train_ids = train_labels[:, -1]
 
