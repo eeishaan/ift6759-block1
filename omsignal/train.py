@@ -69,7 +69,7 @@ def train_cnn_classification(
     '''
     Main function
     '''
-    model_file = params['model_file']
+    model_file = MODEL_DIR / params['model_file']
     batch_size = params['batch_size']
     optimiser_params = params['optimiser_params']
     epochs = params['epochs']
@@ -119,7 +119,7 @@ def train_lstm_exp(
     """
     Main function
     """
-    model_file = params['model_file']
+    model_file = MODEL_DIR / params['model_file']
     batch_size = params['batch_size']
     optimiser_params = params['optimiser_params']
     model_params = params.get('model_params', {})
@@ -176,7 +176,7 @@ def train_cnn_regression(
     '''
     Main function
     '''
-    model_file = params['model_file']
+    model_file = MODEL_DIR / params['model_file']
     batch_size = params['batch_size']
     optimiser_params = params['optimiser_params']
     epochs = params['epochs']
@@ -227,7 +227,7 @@ def train_cnn_multi_task(
     '''
     Main function
     '''
-    model_file = params['model_file']
+    model_file = MODEL_DIR / params['model_file']
     batch_size = params['batch_size']
     optimiser_params = params['optimiser_params']
     epochs = params['epochs']
