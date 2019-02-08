@@ -62,7 +62,7 @@ def get_dataloader(
     return loader, row_id_map
 
 
-def get_test_dataloader(test_data_file, segmenter, batch_size):
+def get_test_dataloader(test_data_file, segmenter, batch_size=160):
     test_data_file = check_file(test_data_file, DATA_ROOT_DIR)
     if test_data_file is None:
         return
