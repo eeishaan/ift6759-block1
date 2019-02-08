@@ -24,6 +24,10 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 def get_test_parser(parent=None):
+    '''
+    Construct argparser for test script
+    '''
+
     if parent is None:
         parser = argparse.ArgumentParser()
     else:
@@ -53,72 +57,114 @@ def get_test_parser(parent=None):
 
 
 def test_cnn_classification(model_file, test_data_file):
+    # segment = hearbeat
     segmenter = SignalSegmenter()
+
+    # get loader for segmented preprocessed data
     test_loader, row_mapping = get_test_dataloader(test_data_file, segmenter)
     if test_loader is None:
         exit(1)
 
+    # mapper for mapping the id to true id
     rev_id_mapper = ReverseLabelMap(ID_MAPPING)
+
+    # instantiate an experiment
     exp_cls = SimpleNetExperiment(
         model_file,
         device=device,
     )
+
+    # load the experiment from file
     exp_cls.load_experiment()
+
+    # run the exp on test data
     preds = exp_cls.test(test_loader)
     preds = np.array(preds, dtype='int')
-    # vote and remap
+
+    # take a majority vote among segments
     y_pred_majority = np.array([])
     for i in range(160):
         index_of_int = row_mapping == i
         counts = np.bincount(preds[index_of_int].astype(int))
         y_pred_majority = np.append(y_pred_majority, np.argmax(counts))
+
+    # map the label to true labels
     y_pred_majority = np.array([rev_id_mapper(i) for i in y_pred_majority])
     return y_pred_majority
 
 
 def test_cnn_regression(model_file, test_data_file):
+    # segment = heart beat
     segmenter = SignalSegmenter(take_average=True)
+
+    # get preprocessed segmented data
     test_loader, _ = get_test_dataloader(test_data_file, segmenter)
     if test_loader is None:
         exit(1)
 
+    # initialize experiment
     exp_cls = RegressionNetEperiment(
         model_file,
         device=device,
     )
+    # load the experiment from file
     exp_cls.load_experiment()
+
+    # run on test data
     preds = exp_cls.test(test_loader)
-    # vote and remap
+
     return preds
 
 
 def test_cnn_multi_task(model_file, test_data_file):
+    # segment = heart beat
     segmenter = SignalSegmenter(take_average=True)
+
+    # get preprocessed segmented data
     test_loader, _ = get_test_dataloader(test_data_file, segmenter)
     if test_loader is None:
         exit(1)
 
+    # reverse mapper for converting id to true id
     rev_id_mapper = ReverseLabelMap(ID_MAPPING)
+
+    # initialize experiment
     exp_cls = RegressionNetEperiment(
         model_file,
         device=device,
     )
+
+    # load the experiment from file
     exp_cls.load_experiment()
+
+    # run on test data
     preds = exp_cls.test(test_loader)
+
+    # remap to true id
     preds[:, -1] = np.array([rev_id_mapper(p) for p in preds[:, -1]])
     return preds
 
 
 def test_deterministic(model_file, test_data_file):
+    # load the data
     test_data = read_memfile(
         test_data_file, shape=(160, 3750), dtype='float32')
+
+    # pre-process data
     preprocessor = Preprocessor()
     test_data = torch.tensor(test_data)
     test_data = preprocessor(test_data)
 
+    # mapper to map to true id
     rev_id_mapper = ReverseLabelMap(ID_MAPPING)
+
+    # load exp from file
     exp_cls = DeterministicExp.load_experiment(model_file)
+
+    # run on test data
     preds = exp_cls.test(test_data)
+
+    # remap ids to true ids
     preds[:, -1] = np.array([rev_id_mapper(p) for p in preds[:, -1]])
     return preds
 
@@ -158,7 +204,10 @@ def test(args):
         exit(1)
     model = args.model
 
+    # find the relevant test function
     test_func = MODEL_EXP_MAP[model]['test_func']
+
+    # if no model file is specified, use the one specified in params file
     if model_file is None:
         param_file = MODEL_EXP_MAP[model]['param_file']
         param_file = check_file(param_file, PARAM_DIR)
