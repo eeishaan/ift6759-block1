@@ -113,11 +113,15 @@ class SignalSegmenter(object):
 
 class LSTMSegmenter():
     def __init__(self, top_freq=3, max_hb=15, segment_size=110):
+        # Size of extracted heartbeats.
         self.segment_size = segment_size
+        # Top frequency kept from the Fourier Transform.
         self.top_freq = top_freq
+        # Numbers of heartbeats kept.
         self.max_hb = max_hb
 
     def __call__(self, data):
+        # Find out the R peaks
         r_peak = detect_R_peak(data)
         fft = FFT()
         heartb = []
@@ -129,28 +133,34 @@ class LSTMSegmenter():
 
         for ecg in data:
             fourier = fft(ecg)
+            # Compute the fast fourier transform and keep the top k highest peaks.
             _, high_frequency = torch.topk(fourier, self.top_freq)
+            # Compute the mean and std from distances from R peaks.
             rr_mean = torch.tensor([rr_mean_list[ecg_idx]])
             rr_std = torch.tensor([rr_std_list[ecg_idx]])
+            # Concatenate all features extracted from ecg.
             features = torch.cat((high_frequency.float(), rr_mean, rr_std))
 
             nfeat = len(features)
 
             heartbeats = torch.zeros((1, self.max_hb, self.segment_size+nfeat))
             hb_idx = 0
-            # generate the template
+            # Generate the template.
+            # Throw away first and last R peaks as it may lead to segments
+            # of len less than desired length.
             for i in r_peak[ecg_idx][1:-1]:
+                # Takes only max_hb heartbeats from ecg to assure that the data 
+                # is balanced.
                 if hb_idx >= self.max_hb:
                     break
                 heartbeat = ecg[int(
                     i)-int(half_size_int*0.8): int(i)+int(half_size_int*1.2)]
+                # Add the heartbeat and features.
                 heartbeats[0, hb_idx, :self.segment_size] = heartbeat
                 heartbeats[0, hb_idx, self.segment_size:] = features
 
                 hb_idx += 1
-
-            #template[:][:-top_freq] -= np.mean(template[:][:-top_freq], axis=0)
-            #template[:][:-top_freq] /= np.std(template[:][:-top_freq], axis=0)+0.000001
+            # Append it to the list.
             heartb.append(heartbeats)
             ecg_ids.append(ecg_idx)
             ecg_idx += 1
@@ -158,14 +168,13 @@ class LSTMSegmenter():
         heartb = tuple(heartb)
         heartb = torch.cat(heartb)
 
+        # Normalize the features.
         heartb[:, :, self.segment_size:] -= torch.mean(heartb[:, :, self.segment_size:],
                                                        dim=0)
         heartb[:, :, self.segment_size:] /= torch.std(heartb[:, :, self.segment_size:],
                                                       dim=0)+0.000001
 
         ecg_ids = torch.tensor(ecg_ids)
-
-        #listofheartb = [hearth_beat for hearth_beat in template for template in listofheartb]
         return heartb, ecg_ids
 
 
