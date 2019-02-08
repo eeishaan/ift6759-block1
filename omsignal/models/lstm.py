@@ -4,23 +4,26 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from omsignal.utils.preprocessor import Preprocessor
+from omsignal.utils.transform.preprocessor import Preprocessor
+
 
 class gaussian_noise(nn.Module):
-    def __init__(self, std=0.1, is_relative_detach=True):
+    def __init__(self, device, std=0.1, is_relative_detach=True):
         super().__init__()
+        self.device = device
         self.std = std
         self.is_relative_detach = is_relative_detach
 
     def forward(self, x):
         if self.training and self.std != 0:
             scale = self.std*x.detach() if self.is_relative_detach else self.std*x
-            sampled_noise = torch.randn(x.shape).to(device)*scale
+            sampled_noise = torch.randn(x.shape).to(self.device)*scale
             x = x + sampled_noise
         return x
 
+
 class LSTMModel(nn.Module):
-    def __init__(self, input_dim, out_dim, hidden_dim, n_layers, device):
+    def __init__(self, input_dim, out_dim, hidden_dim, device, n_layers=1):
         super(LSTMModel, self).__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
@@ -28,7 +31,7 @@ class LSTMModel(nn.Module):
 
         self.device = device
 
-        self.noise = gaussian_noise()
+        self.noise = gaussian_noise(device)
 
         self.preprocessor = Preprocessor()
         self.lstm = nn.LSTM(input_size=self.input_dim,
@@ -47,11 +50,11 @@ class LSTMModel(nn.Module):
                        torch.zeros(self.n_layers, batch_size, self.hidden_dim).to(self.device))
 
     def forward(self, inputs, hidden, batch_size):
-        #LSTM
+        # LSTM
         inputs = self.noise(inputs)
         inputs, hidden = self.lstm(inputs, hidden)
 
-        #MLP
+        # MLP
         inputs = inputs.contiguous()[:, -1, :]
         inputs = self.dropout1(inputs)
         inputs = self.linear1(inputs.view(batch_size, -1))

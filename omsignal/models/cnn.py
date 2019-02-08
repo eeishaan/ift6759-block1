@@ -276,9 +276,20 @@ class RegressionNet(nn.Module):
         return xRR_std, xTR_mean, xPR_mean
 
 
-class MultiTaskNet(RegressionNet):
+class MultiTaskNet(nn.Module):
     def __init__(self):
         super(MultiTaskNet, self).__init__()
+        self.conv1 = nn.Conv1d(1, 10, kernel_size=3)  # 22
+        self.conv2 = nn.Conv1d(10, 20, kernel_size=3)  # 18
+        self.conv3 = nn.Conv1d(20, 20, kernel_size=3)  # 18
+        self.drop_conv3 = nn.Dropout2d(p=0.5)  # 4
+
+        self.fc1RR_std = nn.Linear(60, 30)
+        self.fc2RR_std = nn.Linear(30, 1)
+        self.fc1TR_mean = nn.Linear(60, 30)
+        self.fc2TR_mean = nn.Linear(30, 1)
+        self.fc1PR_mean = nn.Linear(60, 30)
+        self.fc2PR_mean = nn.Linear(30, 1)
         self.fc1_label = nn.Linear(60, 50)
         self.drop_lin_label = nn.Dropout(p=0.5)
         self.fc2_label = nn.Linear(50, 32)

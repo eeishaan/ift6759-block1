@@ -60,12 +60,21 @@ class SimpleNetExperiment(OmExperiment):
     def after_minibatch_eval(self, ctx, outputs, labels):
         self.after_forwardp(ctx, outputs, labels)
 
+    def after_minibatch_test(self, ctx, outputs):
+        if 'predicted' not in ctx:
+            ctx['predicted'] = []
+        pred = torch.argmax(outputs, 1)
+        ctx['predicted'].extend(pred.tolist())
+
     def after_eval(self, ctx):
         acc = recall_score(ctx['true_labels'],
                            ctx['predicted'], average='macro')
         acc = (1 - ((1 - acc)/(1-1/32)))
         message = "Eval accuracy: {}".format(acc)
         logger.info(message)
+
+    def after_test(self, ctx):
+        return ctx['predicted']
 
 
 class RegressionNetEperiment(OmExperiment):
@@ -86,6 +95,9 @@ class RegressionNetEperiment(OmExperiment):
             exp_file,
             device)
 
+    def before_test(self, ctx):
+        self.before_train(ctx)
+
     def before_train(self, ctx):
         ctx.update({
             'tr_mean': [],
@@ -103,12 +115,25 @@ class RegressionNetEperiment(OmExperiment):
     def after_minibatch_eval(self, ctx, outputs, labels):
         self.after_forwardp(ctx, outputs, labels)
 
+    def after_minibatch_test(self, ctx, outputs):
+        rr_std, tr_mean, pr_mean = outputs
+        ctx['rr_std'].extend(rr_std.detach().view(-1).tolist())
+        ctx['tr_mean'].extend(tr_mean.detach().view(-1).tolist())
+        ctx['pr_mean'].extend(pr_mean.detach().view(-1).tolist())
+
     def after_forwardp(self, ctx, outputs, labels):
         rr_std, tr_mean, pr_mean = outputs
         ctx['rr_std'].extend(rr_std.detach().view(-1).tolist())
         ctx['tr_mean'].extend(tr_mean.detach().view(-1).tolist())
         ctx['pr_mean'].extend(pr_mean.detach().view(-1).tolist())
         ctx['labels'].extend(labels.tolist())
+
+    def after_test(self, ctx):
+        return np.hstack((
+            np.array(ctx['pr_mean']).reshape(-1, 1),
+            np.array(ctx['tr_mean']).reshape(-1, 1),
+            np.array(ctx['rr_std']).reshape(-1, 1)
+        ))
 
     def after_train(self, ctx):
         super().after_train(ctx)
@@ -191,6 +216,9 @@ class MultiTaskExperiment(OmExperiment):
             device)
         self._c_criterion = NLLLoss()
 
+    def before_test(self, ctx):
+        self.before_train(ctx)
+
     def before_train(self, ctx):
         ctx.update({
             'tr_mean': [],
@@ -210,6 +238,14 @@ class MultiTaskExperiment(OmExperiment):
     def after_minibatch_eval(self, ctx, outputs, labels):
         self.after_forwardp(ctx, outputs, labels)
 
+    def after_minibatch_test(self, ctx, outputs):
+        rr_std, tr_mean, pr_mean, pred_label = outputs
+        pred_label = torch.argmax(pred_label, 1)
+        ctx['rr_std'].extend(rr_std.detach().view(-1).tolist())
+        ctx['tr_mean'].extend(tr_mean.detach().view(-1).tolist())
+        ctx['pr_mean'].extend(pr_mean.detach().view(-1).tolist())
+        ctx['predicted_labels'].extend(pred_label.detach().view(-1).tolist())
+
     def after_forwardp(self, ctx, outputs, labels):
         rr_std, tr_mean, pr_mean, pred_label = outputs
         pred_label = torch.argmax(pred_label, 1)
@@ -218,6 +254,14 @@ class MultiTaskExperiment(OmExperiment):
         ctx['pr_mean'].extend(pr_mean.detach().view(-1).tolist())
         ctx['predicted_labels'].extend(pred_label.detach().view(-1).tolist())
         ctx['labels'].extend(labels.tolist())
+
+    def after_test(self, ctx):
+        return np.hstack((
+            np.array(ctx['pr_mean']).reshape(-1, 1),
+            np.array(ctx['tr_mean']).reshape(-1, 1),
+            np.array(ctx['rr_std']).reshape(-1, 1),
+            np.array(ctx['predicted_labels']).reshape(-1, 1),
+        ))
 
     def after_train(self, ctx):
         super().after_train(ctx)

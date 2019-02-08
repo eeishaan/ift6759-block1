@@ -1,0 +1,5 @@
+model_file: cnn_classification.pt
+batch_size: 128
+optimiser_params:
+  lr: 0.1
+epochs: 3000

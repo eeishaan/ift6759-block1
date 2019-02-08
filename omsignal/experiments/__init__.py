@@ -23,8 +23,9 @@ class OmExperiment():
         self._device = device
         self._model.to(device)
         self._experiment_file = experiment_file
-        self._optimizer = optimizer_cls(
-            self._model.parameters(), **optimizer_params)
+        if optimizer_params:
+            self._optimizer = optimizer_cls(
+                self._model.parameters(), **optimizer_params)
         self._start_epoch = 0
 
     def after_eval(self, ctx):
@@ -34,6 +35,12 @@ class OmExperiment():
         pass
 
     def after_minibatch_eval(self, ctx, outputs, labels):
+        pass
+
+    def after_minibatch_test(self, ctx, outputs):
+        pass
+
+    def after_test(self, ctx):
         pass
 
     def after_train(self, ctx):
@@ -49,6 +56,9 @@ class OmExperiment():
         return data, labels
 
     def before_save(self, save_dict):
+        pass
+
+    def before_test(self, ctx):
         pass
 
     def before_train(self, ctx):
@@ -68,13 +78,14 @@ class OmExperiment():
                 data, labels = self.before_minibatch_eval(ctx, data, labels)
                 outputs = self._model(data)
                 self.after_minibatch_eval(ctx, outputs, labels)
-            self.after_eval(ctx)
+            return self.after_eval(ctx)
 
     def load_experiment(self):
         checkpoint = torch.load(self._experiment_file)
         self._model.load_state_dict(checkpoint['model_state_dict'])
-        self._optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        self._start_epoch = checkpoint['epoch']
+        if 'optimizer_state_dict' in checkpoint and hasattr(self, '_optimizer'):
+            self._optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self._start_epoch = checkpoint.get('epoch', 0)
 
     def save_experiment(self, ctx):
         save_dict = {
@@ -84,6 +95,15 @@ class OmExperiment():
         }
         self.before_save(save_dict)
         torch.save(save_dict, self._experiment_file)
+
+    def test(self, dataloader):
+        ctx = {}
+        self.before_test(ctx)
+        for _, data in enumerate(dataloader):
+            data = data.to(self._device)
+            outputs = self._model(data)
+            self.after_minibatch_test(ctx, outputs)
+        return self.after_test(ctx)
 
     def train(self, dataloader, epochs, validation_dataloader=None, start_epoch=None):
         start_epoch = start_epoch if start_epoch is not None else self._start_epoch

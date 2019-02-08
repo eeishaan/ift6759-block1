@@ -4,22 +4,22 @@ from sklearn.metrics import accuracy_score, recall_score
 from torch.nn import CrossEntropyLoss
 from torch.optim import Adam
 
+from omsignal.constants import CURR_DIR
 from omsignal.experiments import OmExperiment
 from omsignal.models.lstm import LSTMModel
 from omsignal.utils.transform.basic import ClipAndFlatten
 
-from omsignal.constants import CURR_DIR
 
 class LSTMExperiment(OmExperiment):
     def __init__(self,
-    			 exp_file,
-    			 device,
-    			 model=LSTMModel,
-    			 model_params={device, n_layers=1},
-    			 optimiser=Adam,
-    			 optimiser_params={},
-    			 criterion=CrossEntropyLoss,
-    			 criterion_params={}):
+                 exp_file,
+                 device,
+                 model=LSTMModel,
+                 model_params,
+                 optimiser=Adam,
+                 optimiser_params={},
+                 criterion=CrossEntropyLoss,
+                 criterion_params={}):
         super(SimpleNetExperiment, self).__init__(
             model,
             model_params,
@@ -73,14 +73,14 @@ class LSTMExperiment(OmExperiment):
     def visualisation(self, model, dataloader):
         class_correct = list(0. for i in range(32))
         class_total = list(0. for i in range(32))
-        confusion = torch.zeros(32,32)
+        confusion = torch.zeros(32, 32)
         count = 0
         with torch.no_grad():
             for data in dataloader:
                 inputs, labels = data
                 hidden = model.init_hidden(inputs.shape[0])
                 output, hidden = model(inputs.to(device), hidden,
-                    inputs.shape[0])
+                                       inputs.shape[0])
                 _, predicted = torch.max(output.data, 1)
                 labels = labels.long()
                 labels = labels.view(inputs.shape[0])
@@ -89,7 +89,7 @@ class LSTMExperiment(OmExperiment):
                     label = labels[i]
                     class_correct[label] += c[i].item()
                     class_total[label] += 1
-                    confusion[label,predicted[i].item()] += 1
+                    confusion[label, predicted[i].item()] += 1
                     count += 1
 
         plt.figure()
@@ -97,7 +97,7 @@ class LSTMExperiment(OmExperiment):
         plt.rc('xtick', labelsize=10)
         plt.rc('ytick', labelsize=10)
         plt.rc('axes', labelsize=10)
-        plt.imshow(confusion/torch.tensor(class_total).view(32,1))
+        plt.imshow(confusion/torch.tensor(class_total).view(32, 1))
         plt.colorbar()
         plt.xlabel('Predicted')
         plt.ylabel('True')
