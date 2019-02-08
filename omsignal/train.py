@@ -310,6 +310,7 @@ def train_deterministic(
     det_exp.save_experiment()
     remap.save()
 
+
     # need to define below function definitions
 MODEL_EXP_MAP = {
     'cnn_classification': {
@@ -323,6 +324,10 @@ MODEL_EXP_MAP = {
     'cnn_multi_task': {
         'train_func': train_cnn_multi_task,
         'param_file': PARAM_DIR / 'cnn_multi_task.yml',
+    },
+    'lstm_classification': {
+        'train_func': train_lstm_exp,
+        'param_file': PARAM_DIR / 'lstm_exp.yml'
     },
     'deterministic_task': {
         'train_func': train_deterministic,
