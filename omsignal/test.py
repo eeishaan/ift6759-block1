@@ -6,6 +6,7 @@ import os
 import sys
 
 import numpy as np
+import torch
 import yaml
 
 from omsignal.constants import DATA_ROOT_DIR, ID_MAPPING, MODEL_DIR, PARAM_DIR

@@ -240,6 +240,7 @@ class MultiTaskExperiment(OmExperiment):
 
     def after_minibatch_test(self, ctx, outputs):
         rr_std, tr_mean, pr_mean, pred_label = outputs
+        pred_label = torch.argmax(pred_label, 1)
         ctx['rr_std'].extend(rr_std.detach().view(-1).tolist())
         ctx['tr_mean'].extend(tr_mean.detach().view(-1).tolist())
         ctx['pr_mean'].extend(pr_mean.detach().view(-1).tolist())

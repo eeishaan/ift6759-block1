@@ -176,7 +176,7 @@ def get_preprocessed_data(
     data = preprocessor(data)
 
     # remap labels
-    if labels:
+    if labels is not None:
         labels = np.apply_along_axis(
             remap_label_transformer, 1, labels)
 
@@ -184,7 +184,7 @@ def get_preprocessed_data(
     data, train_ids = segmenter(data)
 
     # create a second level of label mapping
-    if labels:
+    if labels is not None:
         row_label_mapping_train = {i: j for i, j in enumerate(labels[:, -1])}
         if only_ids is True:
             labels = np.array([row_label_mapping_train[i]
