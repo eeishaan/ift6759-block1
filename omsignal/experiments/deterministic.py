@@ -41,6 +41,10 @@ class DeterministicExp(object):
         return obj
 
     def test(self, data):
+        # take average segments
+        segmenter = SignalSegmenter(take_average=True)
+        data_segments, _ = segmenter(data)
+
         # detect the R peak
         r_peak = detect_R_peak(data)
 
@@ -48,16 +52,13 @@ class DeterministicExp(object):
         rr_mean, rr_std = rr_mean_std(r_peak)
 
         # find the rt_mean and pr_mean
+        data = data.numpy()
         ecg_points = find_ecg_points(
             data, r_peak, rr_mean)
 
         rt_mean, pr_mean = rt_mean_pr_mean(ecg_points)
 
-        # take average segments
-        segmenter = SignalSegmenter(take_average=True)
-        data, _ = segmenter(data)
-
-        data_pca = self.ipca.transform(data)
+        data_pca = self.ipca.transform(data_segments)
         id_preds = self.lda.predict(data_pca)
 
         return np.hstack((
