@@ -14,7 +14,7 @@ from omsignal.experiments.cnn_experiment import (MultiTaskExperiment,
                                                  RegressionNetEperiment,
                                                  SimpleNetExperiment)
 from omsignal.experiments.deterministic import DeterministicExp
-from omsignal.utils.loader import get_test_dataloader
+from omsignal.utils.loader import get_test_dataloader, get_vector_and_labels
 from omsignal.utils.memfile import read_memfile
 from omsignal.utils.misc import check_file
 from omsignal.utils.transform.basic import ReverseLabelMap
@@ -110,8 +110,7 @@ def test_cnn_multi_task(model_file, test_data_file):
 
 
 def test_deterministic(model_file, test_data_file):
-    test_data = read_memfile(
-        test_data_file, shape=(160, 3750), dtype='float32')
+    test_data, _ = get_vector_and_labels(test_data_file)
     preprocessor = Preprocessor()
     test_data = torch.tensor(test_data)
     test_data = preprocessor(test_data)
