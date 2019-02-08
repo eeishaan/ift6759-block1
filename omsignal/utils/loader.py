@@ -41,6 +41,9 @@ def get_dataloader(
         segmenter,
         shuffle,
         batch_size):
+    '''
+    Construct dataloader for train/validation data
+    '''
     # load data
     data, labels = get_vector_and_labels(data_file_path)
 
@@ -63,9 +66,15 @@ def get_dataloader(
 
 
 def get_test_dataloader(test_data_file, segmenter, batch_size=160):
+    '''
+    Construct dataloader for test data
+    '''
+
+    # get correct file path
     test_data_file = check_file(test_data_file, DATA_ROOT_DIR)
     if test_data_file is None:
         return
+
     # load test data
     test_data = read_memfile(
         test_data_file, shape=(160, 3750), dtype='float32')
