@@ -79,7 +79,9 @@ class SignalSegmenter(object):
         self.take_average = take_average
 
     def __call__(self, data):
+        # find out the R peaks
         r_peak = detect_R_peak(data)
+
         data = data.cpu().numpy()
         all_segments = []
         all_ecg_ids = []
@@ -88,11 +90,15 @@ class SignalSegmenter(object):
         for recording in range(len(data)):
             segments = []
             ecg_ids = []
+            # throw away first and last R peaks as it may lead to segments
+            # of len less than desired length.
             for i in r_peak[recording][1: -1]:
+                # make a segment
                 new_heart_beat = data[recording][int(
                     i)-int(half_size_int*0.8): int(i)+int(half_size_int*1.2)]
                 if len(new_heart_beat) != 110:
                     continue
+                # append it to the list
                 segments.append(new_heart_beat)
                 ecg_ids.append(recording)
 
@@ -169,7 +175,10 @@ def get_preprocessed_data(
         only_ids,
         remap_label_transformer,
         segmenter):
-
+    '''
+    Data is run through provided preprocessor and segmented into individual
+    heartbeats
+    '''
     # run preprocessing
     preprocessor = Preprocessor()
     data = torch.tensor(data)
