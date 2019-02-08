@@ -128,7 +128,7 @@ MODEL_EXP_MAP = {
 
 def test(args):
     data_file = args.data_file
-    model_file = args.model_file
+    model_file = args.model_path
     model_file = check_file(model_file, MODEL_DIR)
     if model_file is None:
         exit(1)
