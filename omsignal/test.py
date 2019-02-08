@@ -114,7 +114,7 @@ def test_deterministic(model_file, test_data_file):
         test_data_file, shape=(160, 3750), dtype='float32')
     preprocessor = Preprocessor()
     test_data = torch.tensor(test_data)
-    test_data = preprocessor(test_data).numpy()
+    test_data = preprocessor(test_data)
 
     rev_id_mapper = ReverseLabelMap(ID_MAPPING)
     exp_cls = DeterministicExp.load_experiment(model_file)
@@ -137,7 +137,7 @@ MODEL_EXP_MAP = {
         'param_file': PARAM_DIR / 'cnn_multi_task.yml',
     },
     'deterministic_task': {
-        'train_func': test_deterministic,
+        'test_func': test_deterministic,
         'param_file': PARAM_DIR / 'deterministic.yml',
     },
     'best_model': {
