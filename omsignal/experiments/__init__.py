@@ -100,7 +100,7 @@ class OmExperiment():
         ctx = {}
         self.before_test(ctx)
         for _, data in enumerate(dataloader):
-            data = data.to(self._device)
+            data = data[0].to(self._device)
             outputs = self._model(data)
             self.after_minibatch_test(ctx, outputs)
         return self.after_test(ctx)
