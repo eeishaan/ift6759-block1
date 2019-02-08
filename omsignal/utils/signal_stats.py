@@ -68,6 +68,9 @@ def detect_R_peak(data, sada_wd_size=7, fs_wd_size=12, threshold=35):
                 r_peak = np.append(r_peak, R_tick + start_QRS)
                 in_QRS = 0
                 start_QRS = 0
+                
+        if r_peak.size == 0:
+            r_peak = np.array([500, 610, 720, 830])
 
         r_peaks.append(r_peak)
 
@@ -112,6 +115,8 @@ def fing_peak_offset_onset(heart_beat, side, half_size_int, c1, c2):
     derivative = heart_beat[1:] - heart_beat[:-1]
     TA = np.array([])
     TDA = np.array([])
+    
+    QRS_offset = 50
 
     for i in range(int(half_size_int * 0.8) + 1, int(half_size_int * 0.8) + 25):
         TA = np.append(TA, np.max(
@@ -234,7 +239,7 @@ def rt_mean_pr_mean(ECG_points):
     return RT_Mean, PR_Mean
 
 
-def rr_mean_std(r_peak, max_interval=180):
+def rr_mean_std(r_peak):
     """
     Calculate the mean RR interval and the std
 
@@ -254,5 +259,9 @@ def rr_mean_std(r_peak, max_interval=180):
 
     rr_interval_mean = [np.mean(interval) for interval in rr_interval_adj]
     rr_std = [np.std(interval) for interval in rr_interval_adj]
+    
+    #To handle case where there is no interval that are keep
+    rr_interval_mean = [100 if str(mean)=='nan' else mean for mean in rr_interval_mean]
+    rr_std = [5 if str(std)=='nan' else std for std in rr_std]
 
     return rr_interval_mean, rr_std
