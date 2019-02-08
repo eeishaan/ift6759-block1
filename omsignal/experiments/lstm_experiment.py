@@ -4,23 +4,24 @@ from sklearn.metrics import accuracy_score, recall_score
 from torch.nn import CrossEntropyLoss
 from torch.optim import Adam
 
-from omsignal.constants import CURR_DIR
+from omsignal.constants import GRAPH_DIR
 from omsignal.experiments import OmExperiment
 from omsignal.models.lstm import LSTMModel
 from omsignal.utils.transform.basic import ClipAndFlatten
+from omsignal.utils.vis import plot_confusion_matrix
 
 
 class LSTMExperiment(OmExperiment):
     def __init__(self,
                  exp_file,
                  device,
-                 model=LSTMModel,
                  model_params,
+                 model=LSTMModel,
                  optimiser=Adam,
                  optimiser_params={},
                  criterion=CrossEntropyLoss,
                  criterion_params={}):
-        super(SimpleNetExperiment, self).__init__(
+        super(LSTMExperiment, self).__init__(
             model,
             model_params,
             optimiser,
@@ -70,40 +71,11 @@ class LSTMExperiment(OmExperiment):
         message = "Eval accuracy: {}".format(acc)
         print(message)
 
-    def visualisation(self, model, dataloader):
-        class_correct = list(0. for i in range(32))
-        class_total = list(0. for i in range(32))
-        confusion = torch.zeros(32, 32)
-        count = 0
-        with torch.no_grad():
-            for data in dataloader:
-                inputs, labels = data
-                hidden = model.init_hidden(inputs.shape[0])
-                output, hidden = model(inputs.to(device), hidden,
-                                       inputs.shape[0])
-                _, predicted = torch.max(output.data, 1)
-                labels = labels.long()
-                labels = labels.view(inputs.shape[0])
-                c = (predicted == labels.to(device)).squeeze()
-                for i in range(c.shape[0]):
-                    label = labels[i]
-                    class_correct[label] += c[i].item()
-                    class_total[label] += 1
-                    confusion[label, predicted[i].item()] += 1
-                    count += 1
-
-        plt.figure()
-        plt.style.use('ggplot')
-        plt.rc('xtick', labelsize=10)
-        plt.rc('ytick', labelsize=10)
-        plt.rc('axes', labelsize=10)
-        plt.imshow(confusion/torch.tensor(class_total).view(32, 1))
-        plt.colorbar()
-        plt.xlabel('Predicted')
-        plt.ylabel('True')
-        plt.savefig(CURR_DIR + '/graphs/confusion')
-
-    def train(self, dataloader, epochs, validation_dataloader=None, start_epoch=None):
+    def train(self,
+              dataloader,
+              epochs,
+              validation_dataloader=None,
+              start_epoch=None):
         start_epoch = start_epoch if start_epoch is not None else self._start_epoch
         for epoch in range(start_epoch, epochs):
             ctx = {
@@ -116,7 +88,7 @@ class LSTMExperiment(OmExperiment):
                 self._model.train()
                 data, labels = data.to(self._device), labels.to(self._device)
                 data, labels = self.before_forwardp(ctx, data, labels)
-                self._optimiser()
+                self._optimizer()
                 self._model.zero_grad()
                 hidden = self._model.init_hidden(data.shape(0))
                 outputs, hidden = self._model(data, hidden)
@@ -126,4 +98,5 @@ class LSTMExperiment(OmExperiment):
                 self._optimizer.step()
                 self.after_forwardp(ctx, outputs, labels)
             self.after_train(ctx)
-        self.visualisation(dataloader, self._model)
+        plot_confusion_matrix(GRAPH_DIR / 'lstm.jpg',
+                              ctx['true_labels'], ctx['predicted'])

@@ -39,7 +39,7 @@ class LSTMModel(nn.Module):
                             num_layers=self.n_layers,
                             batch_first=True)
 
-        self.dropout1 = nn.Dropout(p=0.40)
+        self.dropout1 = nn.Dropout(p=0.2)
         self.linear1 = nn.Linear(self.hidden_dim, int(self.hidden_dim/2))
         self.relu = nn.ReLU()
         self.dropout2 = nn.Dropout(p=0.20)
