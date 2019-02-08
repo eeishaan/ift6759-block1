@@ -71,6 +71,22 @@ class LSTMExperiment(OmExperiment):
         message = "Eval accuracy: {}".format(acc)
         print(message)
 
+    def after_minibatch_test(self, ctx, outputs):
+        if 'predicted' not in ctx:
+            ctx['predicted'] = []
+        pred = torch.argmax(outputs, 1)
+        ctx['predicted'].extend(pred.tolist())
+
+    def test(self, dataloader):
+        ctx = {}
+        self.before_test(ctx)
+        for _, data in enumerate(dataloader):
+            data = data.to(self._device)
+            hidden = self._model.init_hidden(data.shape(0))
+            outputs, hidden = self._model(data, hidden)
+            self.after_minibatch_test(ctx, outputs)
+        return self.after_test(ctx)
+
     def train(self,
               dataloader,
               epochs,
@@ -90,7 +106,7 @@ class LSTMExperiment(OmExperiment):
                 data, labels = self.before_forwardp(ctx, data, labels)
                 self._optimizer()
                 self._model.zero_grad()
-                hidden = self._model.init_hidden(data.shape(0))
+                hidden = self._model.init_hidden(data.shape[0])
                 outputs, hidden = self._model(data, hidden)
                 loss = self._criterion(outputs, labels)
                 ctx['running_loss'] += loss

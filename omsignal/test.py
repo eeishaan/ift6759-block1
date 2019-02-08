@@ -51,7 +51,6 @@ def get_test_parser(parent=None):
 
     return parser
 
-
 def test_cnn_classification(model_file, test_data_file):
     segmenter = SignalSegmenter()
     test_loader, row_mapping = get_test_dataloader(test_data_file, segmenter)
@@ -75,6 +74,28 @@ def test_cnn_classification(model_file, test_data_file):
     y_pred_majority = np.array([rev_id_mapper(i) for i in y_pred_majority])
     return y_pred_majority
 
+def test_lstm_classification(model_file, test_data_file):
+    segmenter = LSTMSegmenter()
+    test_loader, row_mapping = get_test_dataloader(test_data_file, segmenter)
+    if test_loader is None:
+        exit(1)
+
+    rev_id_mapper = ReverseLabelMap(ID_MAPPING)
+    exp_cls = LSTMExperiment(
+        model_file,
+        device=device,
+    )
+    exp_cls.load_experiment()
+    preds = exp_cls.test(test_loader)
+    preds = np.array(preds, dtype='int')
+    # vote and remap
+    y_pred_majority = np.array([])
+    for i in range(160):
+        index_of_int = row_mapping == i
+        counts = np.bincount(preds[index_of_int].astype(int))
+        y_pred_majority = np.append(y_pred_majority, np.argmax(counts))
+    y_pred_majority = np.array([rev_id_mapper(i) for i in y_pred_majority])
+    return y_pred_majority
 
 def test_cnn_regression(model_file, test_data_file):
     segmenter = SignalSegmenter(take_average=True)
