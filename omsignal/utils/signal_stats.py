@@ -249,7 +249,8 @@ def rr_mean_std(r_peak, max_interval=180):
     rr_interval = [r_peak[i][1:]-r_peak[i][0:-1] for i in range(len(r_peak))]
 
     # We keep only good quality one
-    rr_interval_adj = [interval[interval < 180] for interval in rr_interval]
+    rr_interval_adj = [interval[(interval<np.median(interval)*1.5) & (interval>40)] 
+                   for  interval in rr_interval]
 
     rr_interval_mean = [np.mean(interval) for interval in rr_interval_adj]
     rr_std = [np.std(interval) for interval in rr_interval_adj]
