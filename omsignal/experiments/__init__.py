@@ -23,8 +23,9 @@ class OmExperiment():
         self._device = device
         self._model.to(device)
         self._experiment_file = experiment_file
-        self._optimizer = optimizer_cls(
-            self._model.parameters(), **optimizer_params)
+        if optimizer_params:
+            self._optimizer = optimizer_cls(
+                self._model.parameters(), **optimizer_params)
         self._start_epoch = 0
 
     def after_eval(self, ctx):
@@ -82,7 +83,7 @@ class OmExperiment():
     def load_experiment(self):
         checkpoint = torch.load(self._experiment_file)
         self._model.load_state_dict(checkpoint['model_state_dict'])
-        if 'optimizer_state_dict' in checkpoint:
+        if 'optimizer_state_dict' in checkpoint and hasattr(self, '_optimizer'):
             self._optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self._start_epoch = checkpoint.get('epoch', 0)
 
