@@ -134,7 +134,7 @@ def fing_peak_offset_onset(heart_beat, side, half_size_int, c1, c2):
                 break
 
     # find T peak/ P peak
-    peak = QRS_offset + np.argmax(heart_beat[QRS_offset:])
+    peak = QRS_offset + np.argmax(heart_beat[QRS_offset:-10])
 
     # find T wave offset/P wave onset see paper for details on how it works
 
