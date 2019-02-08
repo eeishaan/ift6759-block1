@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 def get_train_parser(parent=None):
     '''
-    Return command line arguments
+    Construct arg parser for train script
     '''
     if parent is None:
         parser = argparse.ArgumentParser()
@@ -79,13 +79,15 @@ def train_cnn_classification(
     optimiser_params = params['optimiser_params']
     epochs = params['epochs']
 
+    # make model dir
     model_dir = os.path.dirname(os.path.realpath(model_file))
     os.makedirs(model_dir, exist_ok=True)
 
     # create id remap transformer
     remap = RemapLabels(ID_MAPPING)
+
     # create dataloaders
-    train_loader, row_label_mapping_train = get_dataloader(
+    train_loader, _ = get_dataloader(
         train_file,
         torch.LongTensor,
         remap,
@@ -94,7 +96,7 @@ def train_cnn_classification(
         shuffle=True,
         batch_size=batch_size
     )
-    valid_loader, row_label_mapping_valid = get_dataloader(
+    valid_loader, _ = get_dataloader(
         validation_file,
         torch.LongTensor,
         remap,
@@ -104,6 +106,7 @@ def train_cnn_classification(
         batch_size=batch_size
     )
 
+    # initialize experiment
     simplenet_exp = SimpleNetExperiment(
         model_file,
         optimiser_params=optimiser_params,
@@ -114,6 +117,7 @@ def train_cnn_classification(
         train_loader,
         epochs=epochs,
         validation_dataloader=valid_loader)
+    # save the id mapping
     remap.save()
 
 
@@ -130,14 +134,15 @@ def train_lstm_exp(
     model_params = params.get('model_params', {})
     epochs = params['epochs']
 
+    # make model directory
     model_dir = os.path.dirname(os.path.realpath(model_file))
     os.makedirs(model_dir, exist_ok=True)
 
-    # remap labels
+    # remap id transformer
     remap = RemapLabels(ID_MAPPING)
 
     # create dataloaders
-    train_loader, row_label_mapping_train = get_dataloader(
+    train_loader, _ = get_dataloader(
         train_file,
         torch.LongTensor,
         remap,
@@ -146,7 +151,7 @@ def train_lstm_exp(
         shuffle=True,
         batch_size=batch_size
     )
-    valid_loader, row_label_mapping_valid = get_dataloader(
+    valid_loader, _ = get_dataloader(
         validation_file,
         torch.LongTensor,
         remap,
@@ -160,6 +165,7 @@ def train_lstm_exp(
         'device': device
     })
 
+    # initialize experiment
     lstm_exp = LSTMExperiment(
         model_file,
         optimiser_params=optimiser_params,
@@ -171,6 +177,8 @@ def train_lstm_exp(
         train_loader,
         epochs=epochs,
         validation_dataloader=valid_loader)
+
+    # preserve the id mapping
     remap.save()
 
 
@@ -186,6 +194,7 @@ def train_cnn_regression(
     optimiser_params = params['optimiser_params']
     epochs = params['epochs']
 
+    # make model dir
     model_dir = os.path.dirname(os.path.realpath(model_file))
     os.makedirs(model_dir, exist_ok=True)
 
@@ -193,7 +202,7 @@ def train_cnn_regression(
     remap = RemapLabels(ID_MAPPING)
 
     # create dataloaders
-    train_loader, row_label_mapping_train = get_dataloader(
+    train_loader, _ = get_dataloader(
         train_file,
         torch.FloatTensor,
         remap,
@@ -202,7 +211,7 @@ def train_cnn_regression(
         shuffle=True,
         batch_size=batch_size
     )
-    valid_loader, row_label_mapping_valid = get_dataloader(
+    valid_loader, _ = get_dataloader(
         validation_file,
         torch.FloatTensor,
         remap,
@@ -212,6 +221,7 @@ def train_cnn_regression(
         batch_size=batch_size
     )
 
+    # initialize experiment
     regnet_exp = RegressionNetEperiment(
         model_file,
         optimiser_params=optimiser_params,
@@ -222,6 +232,8 @@ def train_cnn_regression(
         train_loader,
         epochs=epochs,
         validation_dataloader=valid_loader)
+
+    # preserve id mapping
     remap.save()
 
 
@@ -237,14 +249,15 @@ def train_cnn_multi_task(
     optimiser_params = params['optimiser_params']
     epochs = params['epochs']
 
+    # make model dir
     model_dir = os.path.dirname(os.path.realpath(model_file))
     os.makedirs(model_dir, exist_ok=True)
 
-    # remap labels
+    # remap id transformer
     remap = RemapLabels(ID_MAPPING)
 
     # create dataloaders
-    train_loader, row_label_mapping_train = get_dataloader(
+    train_loader, _ = get_dataloader(
         train_file,
         torch.FloatTensor,
         remap,
@@ -253,7 +266,7 @@ def train_cnn_multi_task(
         shuffle=True,
         batch_size=batch_size
     )
-    valid_loader, row_label_mapping_valid = get_dataloader(
+    valid_loader, _ = get_dataloader(
         validation_file,
         torch.FloatTensor,
         remap,
@@ -263,6 +276,7 @@ def train_cnn_multi_task(
         batch_size=batch_size
     )
 
+    # initialize exp
     multi_task_exp = MultiTaskExperiment(
         model_file,
         optimiser_params=optimiser_params,
@@ -273,6 +287,7 @@ def train_cnn_multi_task(
         train_loader,
         epochs=epochs,
         validation_dataloader=valid_loader)
+    # preserve mapping
     remap.save()
 
 
@@ -281,15 +296,19 @@ def train_deterministic(
         train_file=TRAIN_LABELED_FILE,
         validation_file=VALIDATION_LABELED_FILE):
     model_file = MODEL_DIR / params['model_file']
+
+    # make model dir
     model_dir = os.path.dirname(os.path.realpath(model_file))
     os.makedirs(model_dir, exist_ok=True)
 
+    # get data
     train_data, train_labels = get_vector_and_labels(train_file)
     valid_data, valid_labels = get_vector_and_labels(validation_file)
 
-    # remap transform
+    # transformer to remap ids
     remap = RemapLabels(ID_MAPPING)
 
+    # preprocess data
     preprocessor = Preprocessor()
     train_data = torch.tensor(train_data)
     train_data = preprocessor(train_data)
@@ -302,8 +321,11 @@ def train_deterministic(
     valid_labels = np.apply_along_axis(
         remap, 1, valid_labels)
 
+    # init exp
     det_exp = DeterministicExp(model_file)
     det_exp.train(train_data, train_labels, valid_data, valid_labels)
+
+    # plot confusion matrix on validation data
     pred = det_exp.test(valid_data)
     plot_confusion_matrix(
         GRAPH_DIR / 'deterministic_valid.png', valid_labels[:, -1], pred[:, -1])
@@ -325,10 +347,6 @@ MODEL_EXP_MAP = {
         'train_func': train_cnn_multi_task,
         'param_file': PARAM_DIR / 'cnn_multi_task.yml',
     },
-    'lstm_classification': {
-        'train_func': train_lstm_exp,
-        'param_file': PARAM_DIR / 'lstm_exp.yml'
-    },
     'deterministic_task': {
         'train_func': train_deterministic,
         'param_file': PARAM_DIR / 'deterministic.yml',
@@ -349,8 +367,11 @@ def train(args):
         param_file = check_file(param_file, PARAM_DIR)
     if param_file is None:
         exit(1)
+
+    # load exp parameters
     with open(param_file) as fob:
         params = yaml.load(fob)
+    # call corresponding function
     train_function(params, args.train_data, args.validation_data)
 
 
