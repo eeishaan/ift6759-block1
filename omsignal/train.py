@@ -289,9 +289,9 @@ def train_deterministic(
 
     preprocessor = Preprocessor()
     train_data = torch.tensor(train_data)
-    train_data = preprocessor(train_data).numpy()
+    train_data = preprocessor(train_data)
     valid_data = torch.tensor(valid_data)
-    valid_data = preprocessor(valid_data).numpy()
+    valid_data = preprocessor(valid_data)
 
     # remap labels
     train_labels = np.apply_along_axis(
