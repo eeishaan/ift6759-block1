@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 import os
 
 import numpy as np
@@ -21,6 +22,7 @@ from omsignal.utils.transform.preprocessor import (LSTMSegmenter, Preprocessor,
                                                    get_preprocessed_data)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+logger = logging.getLogger(__name__)
 
 
 def get_train_parser(parent=None):
@@ -106,7 +108,7 @@ def train_cnn_classification(
         optimiser_params=optimiser_params,
         device=device
     )
-    print('started training')
+    logger.info('started training')
     simplenet_exp.train(
         train_loader,
         epochs=epochs,
@@ -163,7 +165,7 @@ def train_lstm_exp(
         model_params=model_params,
         device=device
     )
-    print('started training')
+    logger.info('started training')
     lstm_exp.train(
         train_loader,
         epochs=epochs,
@@ -214,7 +216,7 @@ def train_cnn_regression(
         optimiser_params=optimiser_params,
         device=device
     )
-    print('started training')
+    logger.info('started training')
     regnet_exp.train(
         train_loader,
         epochs=epochs,
@@ -265,7 +267,7 @@ def train_cnn_multi_task(
         optimiser_params=optimiser_params,
         device=device
     )
-    print('started training')
+    logger.info('started training')
     multi_task_exp.train(
         train_loader,
         epochs=epochs,
