@@ -2,6 +2,7 @@
 '''
 Module with basic tranformations
 '''
+import json
 
 import numpy as np
 import torch
@@ -53,7 +54,8 @@ class RemapLabels(OmTransform):
     Remap labels to a continuous interval
     '''
 
-    def __init__(self):
+    def __init__(self, file_path):
+        self.file_path = file_path
         self.map = {}
         self.idx = -1
 
@@ -68,6 +70,21 @@ class RemapLabels(OmTransform):
 
     def state(self):
         return self.map
+
+    def save(self):
+        with open(self.file_path, 'w') as fob:
+            json.dump(self.map, fob)
+
+
+class ReverseLabelMap(OmTransform):
+    def __init__(self, file_path):
+        self.file_path = file_path
+        with open(file_path, 'r') as fob:
+            label_map = json.load(fob)
+        self.map = {v: k for k, v in label_map.items()}
+
+    def __call__(self, x):
+        return self.map[x]
 
 
 class ToNumpy(OmTransform):
