@@ -1,4 +1,7 @@
 #!/usr/bin/evn python3
+'''
+CNN experiments
+'''
 import logging
 
 import numpy as np
@@ -28,6 +31,7 @@ class SimpleNetExperiment(OmExperiment):
             device)
 
     def before_train(self, ctx):
+        # init variables
         ctx['loss_total'] = 0
         ctx['predicted'] = []
         ctx['true_labels'] = []
@@ -99,6 +103,7 @@ class RegressionNetEperiment(OmExperiment):
         self.before_train(ctx)
 
     def before_train(self, ctx):
+        # init variables
         ctx.update({
             'tr_mean': [],
             'rr_std': [],
@@ -220,6 +225,7 @@ class MultiTaskExperiment(OmExperiment):
         self.before_train(ctx)
 
     def before_train(self, ctx):
+        # init variables
         ctx.update({
             'tr_mean': [],
             'rr_std': [],
