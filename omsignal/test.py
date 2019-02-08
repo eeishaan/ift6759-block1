@@ -63,13 +63,14 @@ def test_cnn_classification(model_file, test_data_file):
     )
     exp_cls.load_experiment()
     preds = exp_cls.test(test_loader)
+    preds = np.array(preds, dtype='int')
     # vote and remap
     y_pred_majority = np.array([])
     for i in range(160):
         index_of_int = row_mapping == i
         counts = np.bincount(preds[index_of_int].astype(int))
         y_pred_majority = np.append(y_pred_majority, np.argmax(counts))
-    y_pred_majority = np.apply_along_axis(rev_id_mapper, 0, y_pred_majority)
+    y_pred_majority = np.array([rev_id_mapper(i) for i in y_pred_majority])
     return y_pred_majority
 
 
@@ -102,7 +103,7 @@ def test_cnn_multi_task(model_file, test_data_file):
     )
     exp_cls.load_experiment()
     preds = exp_cls.test(test_loader)
-    preds[:, -1] = np.apply_along_axis(rev_id_mapper, 0, preds[:, -1])
+    preds[:, -1] = np.array([rev_id_mapper(p) for p in preds[:, -1]])
     return preds
 
 
@@ -152,4 +153,4 @@ def test(args):
 if __name__ == '__main__':
     parser = get_test_parser()
     args = parser.parse_args()
-    test(args)
+    print(test(args))

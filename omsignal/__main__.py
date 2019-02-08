@@ -18,4 +18,4 @@ if __name__ == '__main__':
     if args.command == 'train':
         train(args)
     elif args.command == 'test':
-        test(args)
+        print(test(args))
