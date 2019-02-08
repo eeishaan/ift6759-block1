@@ -104,5 +104,5 @@ class DeterministicExp(object):
             'ipca': self.ipca,
             'lda': self.lda
         }
-        with open(self._exp_file) as fob:
+        with open(self._exp_file, 'wb') as fob:
             pickle.dump(save_dict, fob)
