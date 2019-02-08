@@ -5,8 +5,8 @@ import os
 import torch
 import yaml
 
-from omsignal.constants import (MODEL_DIR, PARAM_DIR, TRAIN_LABELED_FILE,
-                                VALIDATION_LABELED_FILE)
+from omsignal.constants import (ID_MAPPING, MODEL_DIR, PARAM_DIR,
+                                TRAIN_LABELED_FILE, VALIDATION_LABELED_FILE)
 from omsignal.experiments.cnn_experiment import (MultiTaskExperiment,
                                                  RegressionNetEperiment,
                                                  SimpleNetExperiment)
@@ -78,7 +78,7 @@ def train_cnn_classification(
     os.makedirs(model_dir, exist_ok=True)
 
     # create id remap transformer
-    remap = RemapLabels()
+    remap = RemapLabels(ID_MAPPING)
     # create dataloaders
     train_loader, row_label_mapping_train = get_dataloader(
         train_file,
@@ -109,6 +109,7 @@ def train_cnn_classification(
         train_loader,
         epochs=epochs,
         validation_dataloader=valid_loader)
+    remap.save()
 
 
 def train_lstm_exp(
@@ -128,7 +129,7 @@ def train_lstm_exp(
     os.makedirs(model_dir, exist_ok=True)
 
     # remap labels
-    remap = RemapLabels()
+    remap = RemapLabels(ID_MAPPING)
 
     # create dataloaders
     train_loader, row_label_mapping_train = get_dataloader(
@@ -165,6 +166,7 @@ def train_lstm_exp(
         train_loader,
         epochs=epochs,
         validation_dataloader=valid_loader)
+    remap.save()
 
 
 def train_cnn_regression(
@@ -183,7 +185,7 @@ def train_cnn_regression(
     os.makedirs(model_dir, exist_ok=True)
 
     # remap labels
-    remap = RemapLabels()
+    remap = RemapLabels(ID_MAPPING)
 
     # create dataloaders
     train_loader, row_label_mapping_train = get_dataloader(
@@ -215,6 +217,7 @@ def train_cnn_regression(
         train_loader,
         epochs=epochs,
         validation_dataloader=valid_loader)
+    remap.save()
 
 
 def train_cnn_multi_task(
@@ -233,7 +236,7 @@ def train_cnn_multi_task(
     os.makedirs(model_dir, exist_ok=True)
 
     # remap labels
-    remap = RemapLabels()
+    remap = RemapLabels(ID_MAPPING)
 
     # create dataloaders
     train_loader, row_label_mapping_train = get_dataloader(
@@ -265,6 +268,7 @@ def train_cnn_multi_task(
         train_loader,
         epochs=epochs,
         validation_dataloader=valid_loader)
+    remap.save()
 
 
 # need to define below function definitions
