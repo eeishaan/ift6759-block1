@@ -90,7 +90,7 @@ def test_cnn_classification(model_file, test_data_file):
 
     # map the label to true labels
     y_pred_majority = np.array([rev_id_mapper(i) for i in y_pred_majority])
-    return y_pred_majority
+    return y_pred_majority.astype('float32')
 
 
 def test_cnn_regression(model_file, test_data_file):
@@ -113,7 +113,7 @@ def test_cnn_regression(model_file, test_data_file):
     # run on test data
     preds = exp_cls.test(test_loader)
 
-    return preds
+    return preds.astype('float32')
 
 
 def test_cnn_multi_task(model_file, test_data_file):
@@ -142,7 +142,7 @@ def test_cnn_multi_task(model_file, test_data_file):
 
     # remap to true id
     preds[:, -1] = np.array([rev_id_mapper(p) for p in preds[:, -1]])
-    return preds
+    return preds.astype('float32')
 
 
 def test_deterministic(model_file, test_data_file):
@@ -166,7 +166,7 @@ def test_deterministic(model_file, test_data_file):
 
     # remap ids to true ids
     preds[:, -1] = np.array([rev_id_mapper(p) for p in preds[:, -1]])
-    return preds
+    return preds.astype('float32')
 
 
 MODEL_EXP_MAP = {
